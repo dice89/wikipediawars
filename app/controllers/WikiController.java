@@ -62,9 +62,7 @@ public class WikiController extends Controller {
 			Promise<Result> promiseOfResult = Promise
 					.promise(new Function0<Result>() {
 						public Result apply() {
-							System.out.println("cache served 123");
-							
-							
+							System.out.println("cache served");
 							return ok(Json.parse(cache));
 						}
 					});
@@ -117,11 +115,10 @@ public class WikiController extends Controller {
 
 		// create parameters
 		WSRequestHolder holder = WS.url("http://en.wikipedia.org/w/api.php");
-		holder = holder.setQueryParameter("test", "test")
-				.setQueryParameter("format", "json")
+		holder = holder.setQueryParameter("format", "json")
 				.setQueryParameter("action", "query")
 				.setQueryParameter("titles", article)
-				.setQueryParameter("prop", "revisions")
+				.setQueryParameter("prlop", "revisions")
 				.setQueryParameter("rvprop", "user|timestamp|size|ids|userid")
 				.setQueryParameter("rvlimit", "max");
 
