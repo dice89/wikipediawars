@@ -58,7 +58,7 @@ public class WikiController extends Controller {
 		// check cache
 		final String cache = (String) Cache.get(CACHE_GEO_PREFIX + article);
 
-		if (cache != null) {
+		/*if (cache != null) {
 			Promise<Result> promiseOfResult = Promise
 					.promise(new Function0<Result>() {
 						public Result apply() {
@@ -68,23 +68,34 @@ public class WikiController extends Controller {
 					});
 
 			return promiseOfResult;
-		}
+		}*/
 		final Promise<Result> resultPromise = chainGetRevisionsGeoWS(null,
 				article, new ArrayList<WSResponse>()).map(
 				new Function<CombinedResponses, Result>() {
 					public Result apply(CombinedResponses responses) {
 						// now let the magic begin
 
-						JsonNode jsonbody;
+						JsonNode jsonbody = null;
 
 						List<JsonNode> revision_array = new ArrayList<JsonNode>();
 						for (WSResponse response : responses.getResponses()) {
-							jsonbody = response.asJson();
+							
+							try {
+								jsonbody = response.asJson();
+							}catch(Exception e){
+								ok(response.toString());
+							}
 
-							// navigate through tree and get first page discard
-							// the other ones
-							revision_array.add(jsonbody.findPath("pages")
-									.elements().next().findPath("revisions"));
+							//prevent json error
+							try {
+								// navigate through tree and get first page discard
+								// the other ones
+								revision_array.add(jsonbody.findPath("pages")
+										.elements().next().findPath("revisions"));
+							}catch(Exception e){
+								internalServerError(e.getMessage());
+							}
+							
 							// now turn this to the revisions_analyzer
 						}
 						// first merge revisions arrays together to only have
@@ -115,11 +126,13 @@ public class WikiController extends Controller {
 
 		// create parameters
 		WSRequestHolder holder = WS.url("http://en.wikipedia.org/w/api.php");
-		holder = holder.setQueryParameter("format", "json")
+		holder = holder.setQueryParameter("test", "test")
+				.setQueryParameter("format", "json")
 				.setQueryParameter("action", "query")
 				.setQueryParameter("titles", article)
-				.setQueryParameter("prlop", "revisions")
+				.setQueryParameter("prop", "revisions")
 				.setQueryParameter("rvprop", "user|timestamp|size|ids|userid")
+				.setQueryParameter("rvdiffto", "prev")
 				.setQueryParameter("rvlimit", "max");
 
 		if (continue_revision != null) {
@@ -155,6 +168,7 @@ public class WikiController extends Controller {
 							String continue_value = response.asJson()
 									.findPath("query-continue")
 									.findPath("rvcontinue").toString();
+							System.out.println(continue_value);
 							responses.add(response);
 							return chainGetRevisionsGeoWS(continue_value,
 									article, responses);

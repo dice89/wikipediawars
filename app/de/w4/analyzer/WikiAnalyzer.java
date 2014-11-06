@@ -11,6 +11,11 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.maxmind.geoip2.exception.GeoIp2Exception;
 
@@ -64,7 +69,7 @@ public class WikiAnalyzer {
 
 		RevisionList rev_list = parseJSON(revision_arrays);
 		System.out.println("Revisions parsed");
-
+		analyzeDifferences(rev_list);
 		return this.aggregateOverGeoLocAndTime(rev_list);
 
 	}
@@ -74,8 +79,34 @@ public class WikiAnalyzer {
 	 * 
 	 * @param revision_arrays
 	 */
-	public void analyzeText(List<JsonNode> revision_arrays) {
+	public void analyzeDifferences(RevisionList revisions) {
+		
+		for (Revision revision : revisions) {
+			if(revision.getDiffhtml().length()==0) continue;
+			
+			//do some replacements
+
+			Document doc = Jsoup.parse(revision.getDiffhtml());
+			Elements elements = doc.select(".diffchange-inline");
+			System.out.println(elements.size());
+			for (Element element : elements) {
+				System.out.println(element.nodeName());
+				
+				
+				System.out.println(cleanDiffText(element.html()));
+			}
+		}
 		// TODO
+	}
+	
+	private String cleanDiffText(String diff){
+		String toreturn = diff.replace("]]", "")
+				.replace("[[", "")
+				.replace("''", "")
+				.replace("\"", "")
+				.replace("|", " ")
+				.replace("_"," ");
+		return toreturn;
 	}
 
 	/**
@@ -153,9 +184,15 @@ public class WikiAnalyzer {
 		String user = revision.findValue("user").asText();
 		String user_id = revision.findValue("userid").asInt() + "";
 		String timestamp = revision.findValue("timestamp").asText();
+		String diffhtml ="";
+		try{
+			 diffhtml = revision.findPath("diff").findValue("*").asText().replace("\\", "");
+		}catch(Exception e){
+			//Difference from wiki api not cached ignore it!
+		}
 		int size = revision.findValue("size").asInt();
 
-		Revision rev = new Revision(user, user_id, timestamp, size, "");
+		Revision rev = new Revision(user, user_id, timestamp, size, diffhtml);
 
 		// verify if is IP
 		if (rev.userIsIP()) {

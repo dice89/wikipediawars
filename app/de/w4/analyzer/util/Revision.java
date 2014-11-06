@@ -71,18 +71,19 @@ public class Revision  implements Comparable<Revision> {
 	private String plainText;
 	private String comment;
 	private GeoObject geo;
+	private String diffhtml;
 	
 	private int editSize;
 	
 	
 	public Revision(String user_name, String user_id, String time_stamp,
-			int size, String wikitext) {
+			int size, String diffhtml) {
 		super();
 		this.user_name = user_name;
 		this.user_id = user_id;
 		this.time_stamp = time_stamp;
 		this.size = size;
-		this.wikitext = wikitext;
+		this.diffhtml = diffhtml;
 	}
 	
 	
@@ -103,6 +104,10 @@ public class Revision  implements Comparable<Revision> {
 
 	public void setEditSize(int editSize) {
 		this.editSize = editSize;
+	}
+
+	public String getDiffhtml() {
+		return diffhtml;
 	}
 
 
