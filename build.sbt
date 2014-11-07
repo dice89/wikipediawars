@@ -14,7 +14,9 @@ libraryDependencies ++= Seq(
   "com.maxmind.geoip2" % "geoip2" % "2.0.0",
   "org.apache.lucene" % "lucene-core" % "4.10.1",
   "com.typesafe.play.plugins" %% "play-plugins-redis" % "2.3.1",
-  "org.jsoup" % "jsoup" % "1.8.1"
+  "org.jsoup" % "jsoup" % "1.8.1",
+  "org.apache.lucene" % "lucene-core" % "4.10.1",
+  "org.apache.lucene" % "lucene-analyzers-common" % "4.10.1"
 )
 
 resolvers ++= Seq(

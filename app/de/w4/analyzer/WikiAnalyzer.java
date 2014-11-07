@@ -9,8 +9,29 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.document.Field;
+import org.apache.lucene.document.FieldType;
+import org.apache.lucene.index.DirectoryReader;
+import org.apache.lucene.index.DocsEnum;
+import org.apache.lucene.index.Fields;
+import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.MultiFields;
+import org.apache.lucene.index.Terms;
+import org.apache.lucene.index.TermsEnum;
+import org.apache.lucene.search.DocIdSetIterator;
+import org.apache.lucene.search.similarities.DefaultSimilarity;
+import org.apache.lucene.search.similarities.TFIDFSimilarity;
+import org.apache.lucene.store.RAMDirectory;
+import org.apache.lucene.util.BytesRef;
+import org.apache.lucene.util.Version;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -22,18 +43,20 @@ import com.maxmind.geoip2.exception.GeoIp2Exception;
 import de.w4.analyzer.ipgeoloc.GeoObject;
 import de.w4.analyzer.ipgeoloc.IPLocExtractor;
 import de.w4.analyzer.util.Revision;
+import de.w4.analyzer.util.RevisionAnalysisResultObject;
 import de.w4.analyzer.util.RevisionList;
 import de.w4.analyzer.util.RevisionSummaryObject;
 import de.w4.analyzer.util.RevisionSummaryObjectGroup;
+import de.w4.analyzer.util.TFIDFWord;
 
 /**
- * Class for a Singleton Object, that manages the whole wikipedia content
+ * Class for a Singleton Object, that manages the whole Wikipedia content
  * analysis.
  * 
- * Implements and origin analysis of wikipedia revisions based on underlying ips
- * and and an analysis what the most changed N-Gramms of an article are
+ * Implements and origin analysis of Wikipedia revisions based on underlying ips
+ * and an analysis what the most changed N-Grams of an article are
  * 
- * @author Alexander C. Mueller
+ * @author Alexander C. Mueller, Michael Dell
  *
  */
 public class WikiAnalyzer {
@@ -62,15 +85,29 @@ public class WikiAnalyzer {
 	 * 
 	 * @param revision_arrays
 	 * @throws ParseException
+	 * @throws IOException
 	 */
-	public ArrayList<RevisionSummaryObjectGroup> analyzeGeoOrigin(
-			List<JsonNode> revision_arrays) throws ParseException {
-		// list of json answers looping over them
+	public RevisionAnalysisResultObject analyzeGeoOrigin(
+			List<JsonNode> revision_arrays, int topKTerms)
+			throws ParseException, IOException {
 
+		long startime = System.currentTimeMillis();
+		// pasre JSON to internal revision representation
 		RevisionList rev_list = parseJSON(revision_arrays);
-		System.out.println("Revisions parsed");
-		analyzeDifferences(rev_list);
-		return this.aggregateOverGeoLocAndTime(rev_list);
+
+		// Analysis of the difference
+		List<TFIDFWord> words = analyzeDifferences(rev_list, topKTerms);
+		ArrayList<RevisionSummaryObjectGroup> grouped = this
+				.aggregateOverGeoLocAndTime(rev_list);
+
+		// some time capturing
+		long endtime = System.currentTimeMillis();
+		long analysistime = (endtime - startime);
+
+		// create result object
+		return new RevisionAnalysisResultObject(rev_list.get(rev_list.size()-1).getRev_id(),
+				rev_list.size(), rev_list.get(rev_list.size()-1).getTime_stamp(), analysistime,
+				words, grouped);
 
 	}
 
@@ -78,35 +115,278 @@ public class WikiAnalyzer {
 	 * Method that analysis the text difference between different revisions
 	 * 
 	 * @param revision_arrays
+	 * @return
+	 * @throws IOException
 	 */
-	public void analyzeDifferences(RevisionList revisions) {
-		
-		for (Revision revision : revisions) {
-			if(revision.getDiffhtml().length()==0) continue;
-			
-			//do some replacements
+	public List<TFIDFWord> analyzeDifferences(RevisionList revisions, int k)
+			throws IOException {
 
-			Document doc = Jsoup.parse(revision.getDiffhtml());
-			Elements elements = doc.select(".diffchange-inline");
-			System.out.println(elements.size());
-			for (Element element : elements) {
-				System.out.println(element.nodeName());
-				
-				
-				System.out.println(cleanDiffText(element.html()));
-			}
+		RAMDirectory idx = new RAMDirectory();
+	
+
+		IndexWriter writer = new IndexWriter(idx, new IndexWriterConfig(
+				Version.LATEST, new StandardAnalyzer()));
+
+	
+		Revision revision;
+		for (int i = 0; i < revisions.size(); i++) {
+			revision = revisions.get(i);
+			if (revision.getDiffhtml().length() == 0)
+				continue;
+
+			// parsee html document
+		
+			Document doc = Jsoup.parseBodyFragment("<table>"+revision.getDiffhtml()+"</table>");
+		
+
+			// get all changes via css query
+			Elements ins_elements = doc.select(".diff-addedline");
+			Elements del_elements = doc.select(".diff-deletedline");
+		
+			//extract the content per category
+			String ins_content = getContent(ins_elements, "ins");
+			String del_content = getContent(del_elements, "del");
+
+			//add lucene documents
+			org.apache.lucene.document.Document lucene_doc_ins = getLuceneDoc(ins_content,"ins",i);
+			writer.addDocument(lucene_doc_ins);
+			
+			org.apache.lucene.document.Document lucene_doc_del = getLuceneDoc(del_content,"del",i);
+			writer.addDocument(lucene_doc_del);
+			
+	
 		}
-		// TODO
+
+		writer.close();
+
+		IndexReader reader = DirectoryReader.open(idx);
+
+		Map<String, Float> docFrequencies = getIDF(reader);
+
+		List<TFIDFWord> wordVector = tfidf(reader, docFrequencies, revisions);
+		reader.close();
+		idx.close();
+		return wordVector.subList(0, k);
 	}
 	
-	private String cleanDiffText(String diff){
-		String toreturn = diff.replace("]]", "")
-				.replace("[[", "")
-				.replace("''", "")
-				.replace("\"", "")
-				.replace("|", " ")
-				.replace("_"," ");
+	/**
+	 * Method creates a lucene document for TF and TFIDF computation
+	 * @param content
+	 * @param node_type
+	 * @param doc_index
+	 * @return
+	 */
+	private org.apache.lucene.document.Document getLuceneDoc(String content, String node_type, int doc_index){
+		org.apache.lucene.document.Document lucene_doc = new org.apache.lucene.document.Document();
+
+		FieldType type = new FieldType();
+
+		type.setIndexed(true);
+		type.setStored(true);
+		type.setStoreTermVectors(true);
+
+		// stsore cleaned content
+		lucene_doc.add(new Field("content", content, type));
+
+		FieldType type2 = new FieldType();
+		type2.setIndexed(false);
+		type2.setStored(true);
+		type2.setStoreTermVectors(false);
+		// store meta info fields
+		lucene_doc.add(new Field("internal_id", doc_index + "", type2));
+		lucene_doc.add(new Field("interal_type", node_type, type2));
+		return lucene_doc;
+
+	}
+	
+	/**
+	 * Extracts the html content from the diff html
+	 * @param elements
+	 * @param type
+	 * @return
+	 */
+	private String getContent(Elements elements, String type) {
+		String content = "";
+		// loop over them
+		for (Element main_element : elements) {
+			Elements subelements = main_element.select(".diffchange-inline");
+
+			if (subelements.size() == 0) {
+				content = content + " " + cleanDiffText(main_element.html());
+			} else {
+				for (Element element : subelements) {
+
+					if (element.nodeName().equals(type)) {
+						content = content + " " + cleanDiffText(element.html());
+					}
+				}
+			}
+		}
+		return content;
+	}
+
+	/**
+	 * This method cleans a given difference string from, not parsed mark-up
+	 * parts
+	 * 
+	 * @param diff
+	 * @return
+	 */
+	private String cleanDiffText(String diff) {
+		String toreturn = diff
+				.replaceAll(
+						"\\b(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]",
+						"")
+				// urls
+				.replaceAll("/[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*/?", " ")
+				// sick urls
+				.replaceAll("&[a-z]+;", " ")
+				// special charactesr
+				.replaceAll("[a-z]+\\s*=", "")
+				.replaceAll("(([0-9]*)(px))", "") // remove pixel entries
+				// meta fields like date =
+				.replace("((\\-*[a-z,A-Z,0-9]*\\-*)*).html", "")
+				// only html links
+				.replace("JPG", "")
+				.replace("jpg", "")
+				.replace("ref", " ")
+				// ref
+				.replace("]]", "").replace("[[", "").replace("''", "")
+				.replace("\"", "").replace("|", " ").replace("_", " ")
+				.replace("{{cite", "").replace("{{Citation needed}}", "")
+				.replace("{{", " ").replace("}}", " ").replace("[", "")
+				.replace("]", "").replace("\\", "");
+
 		return toreturn;
+	}
+
+	/**
+	 * Method to get IDF of Terms based on Lucene handling
+	 * 
+	 * @param reader
+	 * @return
+	 * @throws IOException
+	 */
+	protected Map<String, Float> getIDF(IndexReader reader) throws IOException {
+		Fields fields = MultiFields.getFields(reader);
+
+		TFIDFSimilarity tfidfsim = new DefaultSimilarity();
+
+		Map<String, Float> docFrequencies = new HashMap<>();
+		for (String field : fields) {
+			TermsEnum termEnum = MultiFields.getTerms(reader, field).iterator(
+					null);
+			BytesRef bytesRef;
+			while ((bytesRef = termEnum.next()) != null) {
+				if (termEnum.seekExact(bytesRef)) {
+					String term = bytesRef.utf8ToString();
+					float idf = tfidfsim.idf(termEnum.docFreq(),
+							reader.numDocs());
+					// play here a little bit
+					docFrequencies.put(term, (float) Math.log(idf));
+				}
+			}
+		}
+		return docFrequencies;
+	}
+
+	/**
+	 * 
+	 * Calculated TFIDF Values with help of lucene
+	 * 
+	 * @param reader
+	 * @param docFrequencies
+	 * @param revisions
+	 * @param termFrequencies
+	 * @param tf_Idf_Weights
+	 * @throws IOException
+	 */
+	protected List<TFIDFWord> tfidf(IndexReader reader,
+			Map<String, Float> docFrequencies, RevisionList revisions)
+			throws IOException {
+		TFIDFSimilarity tfidfsim = new DefaultSimilarity();
+		Map<String, Float> termFrequencies = new HashMap<>();
+
+		Map<String, Float> tf_Idf_Weights = new HashMap<>();
+
+		List<TFIDFWord> wordList = new ArrayList<TFIDFWord>();
+		for (int docID = 0; docID < reader.maxDoc(); docID++) {
+			// get all fields, but in general should just be one "content"
+			Fields fields = MultiFields.getFields(reader);
+			for (String field : fields) {
+
+				// if not the content field then continue
+				if (!field.equals("content"))
+					continue;
+
+				// String field = "content";
+				TermsEnum termsEnum = MultiFields.getTerms(reader, field)
+						.iterator(null);
+				DocsEnum docsEnum = null;
+				// get term vectors
+
+				// get Revision for this document
+
+				Terms vector = reader.getTermVector(docID, field);
+
+				// nothing stored so continue
+				if (vector == null)
+					continue;
+				termsEnum = vector.iterator(termsEnum);
+
+				BytesRef bytesRef = null;
+				// set containing all terms
+				Set<String> terms = new HashSet<String>();
+				// enumerate over terms
+				while ((bytesRef = termsEnum.next()) != null) {
+					if (termsEnum.seekExact(bytesRef)) {
+						String term = bytesRef.utf8ToString();
+						terms.add(term);
+						float tf = 0;
+						// pretty inefficient from here one because the tfidf is
+						// computed multiple times per term
+
+						docsEnum = termsEnum.docs(null, null,
+								DocsEnum.FLAG_FREQS);
+						while (docsEnum.nextDoc() != DocIdSetIterator.NO_MORE_DOCS) {
+
+							// get term frequency
+							tf = tfidfsim.tf(docsEnum.freq());
+							termFrequencies.put(term, tf);
+						}
+
+						float idf = docFrequencies.get(term);
+						float w = tf * idf;
+
+						if (!tf_Idf_Weights.containsKey(term)) {
+							tf_Idf_Weights.put(term, w);
+
+							wordList.add(new TFIDFWord(w, term));
+						}
+
+					}
+				}
+
+				// handle revisions deleted and inserted terms
+				// TODO extract into another method
+				int rev_id = Integer.parseInt(reader.document(docID)
+						.getField("internal_id").stringValue().trim());
+
+				String type = reader.document(docID).getField("interal_type")
+						.stringValue().trim();
+				Revision rev = revisions.get(rev_id);
+
+				if (type.equals("ins")) {
+					rev.setInsertedTerms(terms);
+				} else if (type.equals("del")) {
+					rev.setDeletedTerms(terms);
+				}
+
+			}
+		}
+		Collections.sort(wordList);
+
+		return wordList;
 	}
 
 	/**
@@ -133,8 +413,8 @@ public class WikiAnalyzer {
 
 					rev_list.add(revision_obj);
 				} catch (Exception e) {
-					System.out.println("sick entry");
-					System.out.println(revision.toString());
+
+					System.out.println("sick_entry" + revision.toString());
 				}
 
 			}
@@ -182,17 +462,21 @@ public class WikiAnalyzer {
 			throws GeoIp2Exception {
 
 		String user = revision.findValue("user").asText();
+
+		int rev_id = revision.findValue("revid").asInt();
 		String user_id = revision.findValue("userid").asInt() + "";
 		String timestamp = revision.findValue("timestamp").asText();
-		String diffhtml ="";
-		try{
-			 diffhtml = revision.findPath("diff").findValue("*").asText().replace("\\", "");
-		}catch(Exception e){
-			//Difference from wiki api not cached ignore it!
+		String diffhtml = "";
+		try {
+			diffhtml = revision.findPath("diff").findValue("*").asText()
+					.replace("\\", "").replace("==", "");
+		} catch (Exception e) {
+			// Difference from wiki api not cached ignore it!
 		}
 		int size = revision.findValue("size").asInt();
 
-		Revision rev = new Revision(user, user_id, timestamp, size, diffhtml);
+		Revision rev = new Revision(user, user_id, timestamp, size, diffhtml,
+				rev_id);
 
 		// verify if is IP
 		if (rev.userIsIP()) {
@@ -223,9 +507,7 @@ public class WikiAnalyzer {
 
 		HashMap<String, HashMap<String, ArrayList<Revision>>> aggregates = revisions
 				.aggregateRevisionsOverTimeAndOrigin();
-		ArrayList<RevisionSummaryObject> summaryObject = new ArrayList<RevisionSummaryObject>();
 		ArrayList<RevisionSummaryObjectGroup> summaryObjectList = new ArrayList<RevisionSummaryObjectGroup>();
-		HashMap<Date, ArrayList<RevisionSummaryObject>> datemap = new HashMap<Date, ArrayList<RevisionSummaryObject>>();
 
 		for (String date : aggregates.keySet()) {
 
@@ -239,16 +521,22 @@ public class WikiAnalyzer {
 
 			for (String code : map.keySet()) {
 				ArrayList<Revision> reflist = map.get(code);
+				Set<String> inserted_terms = new HashSet<String>();
+				Set<String> deleted_terms = new HashSet<String>();
 				String country = code;
 				int frequency = reflist.size();
 				int editSize = 0;
+
 				for (Revision revision : reflist) {
 					editSize = editSize + Math.abs(revision.getEditSize());
+					inserted_terms.addAll(revision.getInsertedTerms());
+					deleted_terms.addAll(revision.getDeletedTerms());
 				}
 
 				double avg_editSize = editSize / frequency;
 				RevisionSummaryObject rso = new RevisionSummaryObject(
-						frequency, avg_editSize, country, date);
+						frequency, avg_editSize, country, date, inserted_terms,
+						deleted_terms);
 				sog.addSummary(rso);
 			}
 
