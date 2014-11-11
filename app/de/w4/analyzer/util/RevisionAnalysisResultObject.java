@@ -2,11 +2,17 @@ package de.w4.analyzer.util;
 
 import java.util.List;
 
+/**
+ * 
+ * Object wrapping JSON Response Object
+ * @author Alexander C. Mueller
+ *
+ */
 public class RevisionAnalysisResultObject {
+	
 	private int last_revision_id;
 	private int revisions_total;
 	private String newest_revision_time;
-	
 	private long analysis_time;
 	
 
@@ -14,6 +20,13 @@ public class RevisionAnalysisResultObject {
 
 	List<RevisionSummaryObjectGroup> revisions;
 	
+	
+	
+	
+	public RevisionAnalysisResultObject() {
+		super();
+	}
+
 	public RevisionAnalysisResultObject(int last_revision_id,
 			int revisions_total, String newest_revision_time,
 			long analysis_time, List<TFIDFWord> most_specfic_terms,
