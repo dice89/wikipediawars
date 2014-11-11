@@ -166,7 +166,11 @@ public class WikiAnalyzer {
 		List<TFIDFWord> wordVector = tfidf(reader, docFrequencies, revisions);
 		reader.close();
 		idx.close();
-		return wordVector.subList(0, k);
+		
+		if(wordVector.size() >= k){
+			return wordVector.subList(0, k);
+		}
+		return wordVector;
 	}
 	
 	/**
