@@ -176,7 +176,7 @@ public class WikiController extends Controller {
 		return ok(resp);
 	}
 
-	public static String getUTCDateStringForScope(String time_scope) {
+	public static String getUTCDateStringForScope(String scope) {
 		TimeZone tz = TimeZone.getTimeZone("UTC");
 		DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 		df.setTimeZone(tz);
@@ -184,17 +184,20 @@ public class WikiController extends Controller {
 		Date cur_date = new Date();
 		Calendar c = Calendar.getInstance();
 		c.setTime(cur_date);
-
-		if (time_scope.equals(TimeScope.MONTH.toString())) {
-			c.add(Calendar.MONTH, -1);
-		} else if (time_scope.equals(TimeScope.SIXMONTH.toString())) {
-			c.add(Calendar.MONTH, -6);
-		} else if (time_scope.equals(TimeScope.YEAR.toString())) {
-			c.add(Calendar.YEAR, -1);
-		} else {
-			// default scope is month
-			c.add(Calendar.YEAR, -1);
+		
+		if(scope.equals("") || scope == null ){
+			c.add(Calendar.MONTH, -12);
+		}else if(scope.contains("m")){
+			int mindex = scope.indexOf("m");	
+			int month_inc = Integer.parseInt(scope.substring(0, mindex));
+			c.add(Calendar.MONTH, -month_inc);
+			
+		}else if(scope.contains("y")){
+			int mindex = scope.indexOf("y");
+			int year_inc = Integer.parseInt(scope.substring(0, mindex));
+			c.add(Calendar.YEAR, -year_inc);
 		}
+
 
 		return df.format(c.getTime());
 
