@@ -15,6 +15,10 @@ public class RevisionSummaryObjectGroup implements Comparable<RevisionSummaryObj
 		this.data = new ArrayList<RevisionSummaryObject>();
 	}
 
+	public RevisionSummaryObjectGroup() {
+		this.data = new ArrayList<RevisionSummaryObject>();
+	}
+
 	public Date getTimeStamp() {
 		return timeStamp;
 	}

@@ -26,6 +26,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import controllers.util.CombinedResponses;
 import de.w4.analyzer.WikiAnalyzer;
 import de.w4.analyzer.util.RevisionAnalysisResultObject;
+import de.w4.analyzer.util.RevisionList;
 
 public class WikiController extends Controller {
 
@@ -94,15 +95,16 @@ public class WikiController extends Controller {
 	 * @return
 	 */
 	public static Promise<Result> analyze(final String article,
-			final String time_scope) {
+			final String time_scope, final String aggregation_string) {
 
 		// format timely scope
-
+		
 		String end_date_utc_string = getUTCDateStringForScope(time_scope);
+		final int aggregation_type = getAggregationType(aggregation_string);
 
 		// check cache
-		final String cachekey = CACHE_WIKI_PREFIX + "-" + time_scope + "-"
-				+ article;
+		final String cachekey = getCacheKey(article, time_scope,
+				aggregation_type);
 		final String cache = (String) Cache.get(cachekey);
 
 		if (cache != null) {
@@ -130,6 +132,8 @@ public class WikiController extends Controller {
 					try {
 						jsonbody = response.asJson();
 					} catch (Exception e) {
+						
+						System.out.println(e);
 						return returnEmptyResult();
 					}
 
@@ -143,15 +147,16 @@ public class WikiController extends Controller {
 					} catch (Exception e) {
 						return internalServerError(e.getMessage());
 					}
-
+					
 					// now turn this to the revisions_analyzer
 				}
+				System.out.println("Data retrieved now analyse it!");
 				// first merge revisions arrays together to only have one
 				RevisionAnalysisResultObject revision_summary_object = null;
 				try {
 					revision_summary_object = WikiAnalyzer.getWikiAnalyzer()
 							.analyzeGeoOrigin(revision_array,
-									TOP_K_DISCUSSED_TERMS);
+									TOP_K_DISCUSSED_TERMS, aggregation_type);
 				} catch (IOException | ParseException e) {
 					System.out.println("fail");
 					return internalServerError(e.getMessage());
@@ -170,13 +175,35 @@ public class WikiController extends Controller {
 		return resultPromise;
 	}
 
-	public static Status returnEmptyResult() {
+	private static String getCacheKey(final String article,
+			final String time_scope, final int aggregation_type) {
+		final String cachekey = CACHE_WIKI_PREFIX + "-" + time_scope + "-" + aggregation_type + "-"
+				+ article;
+		return cachekey;
+	}
+
+	private static Status returnEmptyResult() {
 
 		JsonNode resp = Json.toJson(new RevisionAnalysisResultObject());
 		return ok(resp);
 	}
+	
+	
+	private static int getAggregationType(String query_string){
+		
+		if(query_string.equals("d")){
+			return RevisionList.AGGREGATE_DAY;
+		}else if (query_string.equals("w")) {
+			return RevisionList.AGGREGATE_WEEK;
+		}else if(query_string.equals("m")){
+			return RevisionList.AGGREGATE_MONTH;
+		}else {
+			return RevisionList.AGGREGATE_DAY;
+		}
+		
+	}
 
-	public static String getUTCDateStringForScope(String scope) {
+	private static String getUTCDateStringForScope(String scope) {
 		TimeZone tz = TimeZone.getTimeZone("UTC");
 		DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 		df.setTimeZone(tz);
@@ -184,6 +211,7 @@ public class WikiController extends Controller {
 		Date cur_date = new Date();
 		Calendar c = Calendar.getInstance();
 		c.setTime(cur_date);
+		
 		
 		if(scope.equals("") || scope == null ){
 			c.add(Calendar.MONTH, -12);
@@ -203,7 +231,7 @@ public class WikiController extends Controller {
 
 	}
 
-	public static Promise<CombinedResponses> chainGetRevisionsGeoWS(
+	private static Promise<CombinedResponses> chainGetRevisionsGeoWS(
 			final String continue_revision, final String article,
 			final List<WSResponse> responses, final String end_date_utc_string,
 			final boolean count_request) {
