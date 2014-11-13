@@ -88,6 +88,32 @@ public class WikiController extends Controller {
 		return resultPromise;
 
 	}
+	
+	/**
+	 * Wrapper service for Wikipedia Autosuggest
+	 * @param search
+	 * @return
+	 */
+	public static Promise<Result> suggest(final String search, final int limit){
+		
+		WSRequestHolder holder = WS.url("http://en.wikipedia.org/w/api.php")
+				.setQueryParameter("action", "opensearch")
+				.setQueryParameter("format", "json")
+				.setQueryParameter("search",search)
+				.setQueryParameter("limit", limit+"")
+				.setQueryParameter("namespace", "0")
+				.setQueryParameter("suggest", "");
+		
+		return holder.get().map(new Function<WSResponse, Result>() {
+			@Override
+			public Result apply(WSResponse response) throws Throwable {
+				return ok(response.asJson());
+			}
+		});
+		
+	}
+	
+	/*http://en.wikipedia.org/w/api.php?action=opensearch&format=json&search=Mann&namespace=0&suggest=*/
 
 	/**
 	 * Route for analyzing an Article
