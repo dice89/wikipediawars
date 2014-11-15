@@ -88,7 +88,7 @@ public class WikiAnalyzer {
 	 * @throws IOException
 	 */
 	public RevisionAnalysisResultObject analyzeGeoOrigin(
-			List<JsonNode> revision_arrays, int topKTerms)
+			List<JsonNode> revision_arrays, int topKTerms, int aggregation_type)
 			throws ParseException, IOException {
 
 		long startime = System.currentTimeMillis();
@@ -98,16 +98,17 @@ public class WikiAnalyzer {
 		// Analysis of the difference
 		List<TFIDFWord> words = analyzeDifferences(rev_list, topKTerms);
 		ArrayList<RevisionSummaryObjectGroup> grouped = this
-				.aggregateOverGeoLocAndTime(rev_list);
+				.aggregateOverGeoLocAndTime(rev_list, aggregation_type);
 
 		// some time capturing
 		long endtime = System.currentTimeMillis();
 		long analysistime = (endtime - startime);
 
 		// create result object
-		return new RevisionAnalysisResultObject(rev_list.get(rev_list.size()-1).getRev_id(),
-				rev_list.size(), rev_list.get(rev_list.size()-1).getTime_stamp(), analysistime,
-				words, grouped);
+		return new RevisionAnalysisResultObject(rev_list.get(
+				rev_list.size() - 1).getRev_id(), rev_list.size(), rev_list
+				.get(rev_list.size() - 1).getTime_stamp(), analysistime, words,
+				grouped);
 
 	}
 
@@ -122,12 +123,10 @@ public class WikiAnalyzer {
 			throws IOException {
 
 		RAMDirectory idx = new RAMDirectory();
-	
 
 		IndexWriter writer = new IndexWriter(idx, new IndexWriterConfig(
 				Version.LATEST, new StandardAnalyzer()));
 
-	
 		Revision revision;
 		for (int i = 0; i < revisions.size(); i++) {
 			revision = revisions.get(i);
@@ -135,26 +134,27 @@ public class WikiAnalyzer {
 				continue;
 
 			// parsee html document
-		
-			Document doc = Jsoup.parseBodyFragment("<table>"+revision.getDiffhtml()+"</table>");
-		
+
+			Document doc = Jsoup.parseBodyFragment("<table>"
+					+ revision.getDiffhtml() + "</table>");
 
 			// get all changes via css query
 			Elements ins_elements = doc.select(".diff-addedline");
 			Elements del_elements = doc.select(".diff-deletedline");
-		
-			//extract the content per category
+
+			// extract the content per category
 			String ins_content = getContent(ins_elements, "ins");
 			String del_content = getContent(del_elements, "del");
 
-			//add lucene documents
-			org.apache.lucene.document.Document lucene_doc_ins = getLuceneDoc(ins_content,"ins",i);
+			// add lucene documents
+			org.apache.lucene.document.Document lucene_doc_ins = getLuceneDoc(
+					ins_content, "ins", i);
 			writer.addDocument(lucene_doc_ins);
-			
-			org.apache.lucene.document.Document lucene_doc_del = getLuceneDoc(del_content,"del",i);
+
+			org.apache.lucene.document.Document lucene_doc_del = getLuceneDoc(
+					del_content, "del", i);
 			writer.addDocument(lucene_doc_del);
-			
-	
+
 		}
 
 		writer.close();
@@ -166,21 +166,23 @@ public class WikiAnalyzer {
 		List<TFIDFWord> wordVector = tfidf(reader, docFrequencies, revisions);
 		reader.close();
 		idx.close();
-		
-		if(wordVector.size() >= k){
+
+		if (wordVector.size() >= k) {
 			return wordVector.subList(0, k);
 		}
 		return wordVector;
 	}
-	
+
 	/**
 	 * Method creates a lucene document for TF and TFIDF computation
+	 * 
 	 * @param content
 	 * @param node_type
 	 * @param doc_index
 	 * @return
 	 */
-	private org.apache.lucene.document.Document getLuceneDoc(String content, String node_type, int doc_index){
+	private org.apache.lucene.document.Document getLuceneDoc(String content,
+			String node_type, int doc_index) {
 		org.apache.lucene.document.Document lucene_doc = new org.apache.lucene.document.Document();
 
 		FieldType type = new FieldType();
@@ -202,9 +204,10 @@ public class WikiAnalyzer {
 		return lucene_doc;
 
 	}
-	
+
 	/**
 	 * Extracts the html content from the diff html
+	 * 
 	 * @param elements
 	 * @param type
 	 * @return
@@ -247,7 +250,8 @@ public class WikiAnalyzer {
 				.replaceAll("&[a-z]+;", " ")
 				// special charactesr
 				.replaceAll("[a-z]+\\s*=", "")
-				.replaceAll("(([0-9]*)(px))", "") // remove pixel entries
+				.replaceAll("(([0-9]*)(px))", "")
+				// remove pixel entries
 				// meta fields like date =
 				.replace("((\\-*[a-z,A-Z,0-9]*\\-*)*).html", "")
 				// only html links
@@ -461,9 +465,10 @@ public class WikiAnalyzer {
 	 * @param revision
 	 * @return
 	 * @throws GeoIp2Exception
+	 * @throws ParseException
 	 */
 	private Revision parseJSONSingleRevision(JsonNode revision)
-			throws GeoIp2Exception {
+			throws GeoIp2Exception, ParseException {
 
 		String user = revision.findValue("user").asText();
 
@@ -507,21 +512,33 @@ public class WikiAnalyzer {
 	 * @throws ParseException
 	 */
 	private ArrayList<RevisionSummaryObjectGroup> aggregateOverGeoLocAndTime(
-			RevisionList revisions) throws ParseException {
+			RevisionList revisions, int aggregation_type) throws ParseException {
 
 		HashMap<String, HashMap<String, ArrayList<Revision>>> aggregates = revisions
-				.aggregateRevisionsOverTimeAndOrigin();
+				.aggregateRevisionsOverTimeAndOrigin(aggregation_type);
 		ArrayList<RevisionSummaryObjectGroup> summaryObjectList = new ArrayList<RevisionSummaryObjectGroup>();
 
 		for (String date : aggregates.keySet()) {
 
 			HashMap<String, ArrayList<Revision>> map = aggregates.get(date);
+			DateFormat df = null;
 
-			DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+			switch (aggregation_type) {
+			case RevisionList.AGGREGATE_DAY:
+				df = new SimpleDateFormat("yyyy-MM-dd");
+				break;
+			case RevisionList.AGGREGATE_WEEK:
+				df = new SimpleDateFormat("yyyy-ww");
+				break;
+			case RevisionList.AGGREGATE_MONTH:
+				df = new SimpleDateFormat("yyyy-MM");
+				break;
+			}
+
+			// DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
 			Date result = df.parse(date);
 
-			RevisionSummaryObjectGroup sog = new RevisionSummaryObjectGroup(
-					result);
+			RevisionSummaryObjectGroup sog = new RevisionSummaryObjectGroup(result);
 
 			for (String code : map.keySet()) {
 				ArrayList<Revision> reflist = map.get(code);

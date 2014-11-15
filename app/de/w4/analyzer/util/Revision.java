@@ -1,13 +1,21 @@
 package de.w4.analyzer.util;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.TimeZone;
 
 import de.w4.analyzer.ipgeoloc.GeoObject;
 
 
 
+/**
+ * @author mueller
+ * TODO cleanup
+ */
 public class Revision  implements Comparable<Revision> {
 	private String user_name;
 	private String user_id;
@@ -20,6 +28,8 @@ public class Revision  implements Comparable<Revision> {
 	private String comment;
 	private GeoObject geo;
 	private String diffhtml;
+	private Date date;
+	
 	
 	private int editSize;
 	
@@ -30,7 +40,7 @@ public class Revision  implements Comparable<Revision> {
 	
 	
 	public Revision(String user_name, String user_id, String time_stamp,
-			int size, String diffhtml, int rev_id) {
+			int size, String diffhtml, int rev_id) throws ParseException {
 		super();
 		this.user_name = user_name;
 		this.user_id = user_id;
@@ -40,6 +50,17 @@ public class Revision  implements Comparable<Revision> {
 		this.insertedTerms = new HashSet<String>();
 		this.deletedTerms = new HashSet<String>();
 		this.rev_id = rev_id;
+		
+		this.date = parseTimeStamp(time_stamp);
+	}
+
+
+	private Date parseTimeStamp(String time_stamp) throws ParseException {
+		TimeZone tz = TimeZone.getTimeZone("UTC");
+		DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+		df.setTimeZone(tz);
+		
+		return df.parse(time_stamp);
 	}
 	
 	
@@ -155,6 +176,13 @@ public class Revision  implements Comparable<Revision> {
 	public int getRev_id() {
 		return rev_id;
 	}
+
+
+	public Date getDate() {
+		return date;
+	}
+	
+	
 
 	 
 }
