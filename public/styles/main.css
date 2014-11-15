@@ -1,0 +1,108 @@
+html * {margin: 0; padding: 0; font-size: 1rem; font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-weight: 200;}
+
+body {background: #dddddd; -webkit-font-smoothing: antialiased; font-smoothing: antialiased;}
+
+.large-header {position: absolute; width: 100%; overflow: hidden; background: black; z-index: 2;}
+.header-caption {position: absolute; right: 0; bottom: 0; color: rgba(255,255,255,0.5); padding: 10px; font-size: .825rem; z-index: 5;}
+.header-skipper {position: absolute; cursor: pointer; width: 120px; text-align: center; color: white; padding: 10px; bottom: 75px; left: 50%; transform: translateX(-50%); -webkit-transform: translateX(-50%); z-index: 5;}
+.header-skipper .arrow-down {position: absolute; bottom: -35px; width: 50px; height: 50px; border-bottom: 1px solid white; border-right: 1px solid white; left: 50%; transform: translateX(-50%) rotate(45deg); -webkit-transform: translateX(-50%) rotate(45deg);}
+
+#language-setting {position: fixed; top: 20px; right: 20px; z-index: 10; text-align: right;}
+#language-setting a {color: white; text-decoration: none; font-size: 2rem; cursor: pointer;}
+#language-setting span {display: block; cursor: pointer; color: white; margin-top: 5px; opacity: 0; pointer-events: none; transform: translateX(50%);}
+#language-setting span.language-selected {font-weight: 600;}
+
+#language-setting {transition: top .3s;}
+#language-setting span:first-of-type {transition: transform .3s ease, opacity .3s ease;}
+#language-setting span:last-of-type {transition: transform .3s ease .1s, opacity .3s ease .1s;}
+
+
+#language-setting.language-select {top: -30px;}
+#language-setting.language-select span {opacity: 1; pointer-events: auto; transform: translateX(0);}
+
+#header-canvas {position: absolute; z-index: 3;}
+.image-wrap {position: absolute; width: 100%; height: 100%;}
+.image-wrap li {width: 100%; height: 100%; position: absolute; overflow: hidden; opacity: 0; z-index: 2;}
+.image-wrap li.current {opacity: 1; z-index: 3;}
+.image-wrap li img {position: absolute; left: 50%; max-height: 100%; transform: translateX(-50%); -webkit-transform: translateX(-50%);}
+@media (min-aspect-ratio: 3/2) { 
+  .image-wrap li img {max-width: 100%; height: auto; max-height: none;}
+}
+
+.app {z-index: 50; position: fixed; obacity: 1; bottom: 0; right: 0; width: 250px; margin-bottom: 50px; margin-right: 50px; transition: opacity 1s;}
+.app img.app-icon {width: 72px; height: 72px; border-radius: 15px; margin: 0 auto; position: relative; display: block; box-shadow: 0 5px 15px rgba(0,0,0,.5);}
+.app img.app-store {width: 100%; margin-top: 20px;}
+.app p {color: white; width: 100%; text-align: center; margin-top: 20px;}
+
+.popup-marker {font-size: .8rem;}
+.popup-marker div {padding: 5px;}
+.popup-marker div.Nein {color: #ccc;}
+.popup-marker div.cam-img {height: 150px; width: 150px; background-size: cover; background-position: center center; border-radius: 80px; margin: 0 auto;}
+.popup-marker b {display: inline; padding-right: 5px;}
+.popup-marker i {padding-right: 5px;}
+.popup-marker span {font-weight: 600; display: inline;}
+.popup-marker p {font-weight: 600;}
+.popup-marker p.text {font-weight: 300; font-size: 1rem;}
+
+body.revealed .app {opacity: 0;}
+
+header {position: absolute; width: 100%; top: 50%; text-align: center; transform: translateY(-150%); -webkit-transform: translateY(-150%); z-index: 5;}
+header span {color: rgba(255,255,255,1); font-weight: 600; font-size: 3rem; text-transform: uppercase; letter-spacing: 0.1rem; }
+header span.thin {font-weight: 200; font-size: 3rem; white-space: nowrap;}
+body.revealed header {text-align: left; padding-left: 15px;}
+@media (min-width: 600px) { 
+  body.revealed header {text-align: center;}
+}
+header .wiki-search {width: 400px; font-size: 2rem; padding: 10px; }
+.autocomplete {width: 420px; list-style-type: none; margin: 0 auto; text-align: left;}
+.autocomplete li {background-color: rgba(255,255,255,0.8); padding: 10px; margin-top: 15px;}
+
+header .subtitle {color: white; font-size: 4rem; width: 600px; margin: 0 auto; padding-top: 15%;}
+body.revealed header .subtitle {display: none;}
+
+.caption {position: fixed; top: 50%; left: 0; background-color: rgba(255,255,255,.95); padding: 20px; box-shadow: 0 5px 15px rgba(0,0,0,.5);}
+.caption h2 {margin: 5px; text-align: left;}
+.caption li {margin-top: 5px; list-style-type: none;}
+.caption object {padding: 0; margin-right: 5px; display: inline; padding: 5px; transform: translateY(.5rem);}
+.caption .number {font-weight: 600;}
+.caption p {margin-top: 20px; border-top: 1px solid #ccc; padding-top: 20px;}
+
+.btn-bar {width: 302px; margin: 0 auto; padding-top: 2rem;}
+.btn-wrapper {float: left; width: 40px; height: 40px; border: 1px solid white; border-radius: 20px; background: rgba(0,0,0,.6); transition: background .3s; cursor: pointer;}
+.btn-wrapper:not(:last-of-type) {margin-right: 10px; }
+.btn-wrapper a {font-size: 1.5rem; position: relative; top: 50%; transform: translateY(-50%); -webkit-transform: translateY(-50%); display: block; text-align: center; text-decoration: none; color: white; transition: color .3s;}
+.btn-wrapper:hover, .btn-wrapper:active {background: white;}
+.btn-wrapper:hover a, .btn-wrapper:active a {color: black;}
+.icon-github, .icon-linkedin {margin-left: 4px;}
+@media (min-width: 900px) { 
+  .btn-bar {width: 448px;}
+  .btn-wrapper {width: 60px; height: 60px; border: 1px solid white; border-radius: 30px;}
+  .btn-wrapper:not(:last-of-type) {margin-right: 15px; }
+  .btn-wrapper a {font-size: 2rem;}
+  .icon-github, .icon-linkedin {margin-left: 5px;}
+}
+
+#content {position: relative; width: 100%; opacity: 0; -webkit-transform: translateY(100%) scale(0.9); transform: translateY(100%) scale(0.9);  z-index: 1;}
+#svg-face {display: block; margin: 25px auto;}
+
+#map-canvas {height: 100%; width: 100%; margin: 0px; padding: 0px; position: absolute;}
+
+section:first-of-type {margin-top: 0rem;}
+section {width: 100%; height: 100%; position: relative;}
+/*section {position: relative; margin: 25px auto; background: rgba(255,255,255,1); padding: 25px; max-width: 980px;}*/
+h1, h2 {text-align: center;}
+h1 {font-size: 2rem; margin-bottom: 1.5rem; margin-top: 1.5rem; font-weight: 600;}
+h2 {font-size: 1.3rem; margin-bottom: 1.5rem; color: #777;}
+
+/*footer {position: fixed; margin: 0 auto; background: rgba(255,255,255,.95); max-width: 180px; bottom: 0; padding: 20px;}
+footer .number {font-weight: 600;}*/
+
+#glass-header {position: fixed; top: 0; z-index: 4; height: 5rem; width: 100%; overflow: hidden;}
+
+#glass-content {
+ /* -webkit-filter: blur(5px);
+  -moz-filter: blur(5px);
+  -o-filter: blur(5px);
+  -ms-filter: blur(5px);
+  filter: blur(5px);*/
+}
