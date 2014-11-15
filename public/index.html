@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="de-DE" lang="de-DE">
+
+<head>
+    <title>WIKI WARS</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <meta name="Author" content="Jascha Quintern" />
+    <meta name="Category" content="application,personal" />
+    <meta name="Description" content="Wiki Wars" />
+    <!-- <link rel="shortcut icon" href="../favicon.ico"> -->
+
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <!-- <link rel="apple-touch-icon" href="/static/images/identity/HTML5_Badge_64.png" /> -->
+    <!-- <link rel="apple-touch-icon-precomposed" href="/static/images/identity/HTML5_Badge_64.png" /> -->
+    <!-- <link rel="shortcut icon" href="/apple-touch-icon.png" /> -->
+
+    <link href="http://fonts.googleapis.com/css?family=Open+Sans:300italic,300,400italic,400,600italic,600,700italic,700,800italic,800" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="styles/main.css" type="text/css" />
+    <link rel="stylesheet" href="styles/animations.css" type="text/css" />
+    <link rel="stylesheet" href="styles/icomoon/style.css" type="text/css" />
+
+    <!-- <script src="/socket.io/socket.io.js"></script> -->
+    <!-- <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=visualization"></script> -->
+
+</head>
+
+
+<body>
+
+    <div id="large-header" class="large-header">
+        <ul class="fxStickIt image-wrap">
+            <li class="current">
+                <img src="styles/img/bgr_1.jpg" alt="Hintergrundbild">
+            </li>
+            <li>
+                <img src="styles/img/bgr_2.jpg" alt="Hintergrundbild">
+            </li>
+            <li>
+                <img src="styles/img/bgr_3.jpg" alt="Hintergrundbild">
+            </li>
+            <li>
+                <img src="styles/img/bgr_4.jpg" alt="Hintergrundbild">
+            </li>
+            <!-- <li>
+                <img src="styles/img/bgr_5.jpg" alt="Hintergrundbild">
+            </li>
+            <li>
+                <img src="styles/img/bgr_6.jpg" alt="Hintergrundbild">
+            </li>
+            <li>
+                <img src="styles/img/bgr_7.jpg" alt="Hintergrundbild">
+            </li>
+            <li>
+                <img src="styles/img/bgr_8.jpg" alt="Hintergrundbild">
+            </li> -->
+        </ul>
+        <canvas id="header-canvas"></canvas>
+
+        <!-- <div id="header-skipper" class="header-skipper">Erfahre mehr
+            <div class="arrow-down"></div>
+        </div> -->
+        <div class="header-caption">© World Wide Wikipedia Wars</div>
+    </div>
+
+    <!-- <div id="language-setting" class="">
+        <a href="#" class="icon-language"></a>
+        <span class='language-selected' data-language='DE'>Deutsch</span>
+        <span class='' data-language='EN'>English</span>
+    </div> -->
+
+    <!-- <div class="app">
+        <img src="img/CameraIconApp.png" class="app-icon" alt="appicon">
+        <p>Auch fürs iPhone: Finde unsere App im Apple App Store.</p>
+        <img src="img/apple-app-store-icon.png" class="app-store" alt="appicon">
+    </div> -->
+
+    <header class="main-title">
+
+        <div>
+            <span>Wikipedia</span>
+            <span class="thin">Wars</span>
+        </div>
+
+        <div>
+            <input class="wiki-search" name="article" type="text" size="30">
+            <ul class="autocomplete">
+                <li>Chrome</li>
+                <li>Not Chrome</li>
+            </ul>
+        </div>
+
+        <div class="subtitle">
+            <p>München steht mit ca. 5000 Kameras unter ständiger Beobachtung. Die Regierung will die Kameraüberwachung ausbauen, doch bedeuten mehr Kameras auch mehr Sicherheit? Finde es heraus!</p>
+        </div>
+    </header>
+
+    <!-- <div id="glass-header">
+        <div id="glass-content">
+        </div>
+    </div> -->
+
+    <div id="content">
+
+        <!-- <section>
+            <div id="map-canvas"></div>
+        </section> -->
+
+        <!-- <div class="caption">
+            <h2>Legende:</h2>
+            <ul>
+                <li>
+                    <object data="img/mapcam.svg" type="image/svg+xml" alt="CAM"></object>Watcher (Kamera)</li>
+                <li>
+                    <object data="img/crimeMarker.svg" type="image/svg+xml" alt="CRIME"></object>Polizeimeldung</li>
+            </ul>
+            <p><span>Kameras Gesamt: </span><span class="number">100</span></p>
+        </div> -->
+
+        <!-- <footer>
+            <p><span>Kameras Gesamt: </span><span class="number">100</span></p>
+        </footer> -->
+    </div>
+    <!-- <script type="text/javascript" src="data/camDataJSON.js"></script> -->
+    <!-- <script type="text/javascript" src="data/crimeDataJSON.js"></script> -->
+    <script type="text/javascript" src="scripts/main.js"></script>
+</body>
+
+</html>
