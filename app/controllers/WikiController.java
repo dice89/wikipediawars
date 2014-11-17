@@ -10,6 +10,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+import play.Logger;
 import play.cache.Cache;
 import play.libs.F.Function;
 import play.libs.F.Function0;
@@ -327,6 +332,31 @@ public class WikiController extends Controller {
 
 					}
 				});
+	}
+
+	/**
+	 * Heuristic to extract the nationality form a wikipedia user page
+	 *
+	 * @return
+	 */
+	public static Promise<Result> geoForRegisteredUsers(String userName) {
+		String url = "http://en.wikipedia.org/wiki/"+userName;
+		return WS.url(url).get().map(response -> {
+					Document doc = Jsoup.parse(response.getBody());
+					Elements contentLinks = doc.getElementById("bodyContent").getElementsByTag("a");
+					String s = "";
+
+					for (Element e: contentLinks) {
+						Logger.debug(e.attr("href"));
+						String[] parts = e.attr("href").split("/");
+						if (parts[parts.length-1].contains(":")) continue;
+						if (parts[parts.length-1].contains("#")) continue;
+						s += e.attr("href")+"\n";
+					}
+
+					return ok(s);
+				}
+		);
 	}
 
 }
