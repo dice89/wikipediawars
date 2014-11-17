@@ -18,8 +18,9 @@ header {
     height: 5rem;
     transition: transform 1s, -webkit-transform 1s, top 1s;
 }
-header span, header span.thin {
-    transition: padding-top 1s, line-height 1s, color 1s, font-size .5s linear .5s;
+header .main-title span, header .main-title span.thin {
+    transition: opacity 1s;
+    /*transition: padding-top 1s, line-height 1s, color 1s, font-size .5s linear .5s;*/
 }
 header .btn-bar {
     transition: opacity .5s;
@@ -28,7 +29,7 @@ body.revealed header {
     transition: background .3s linear 1s, top 1s;
     background: rgba(255, 255, 255, 0);
     width: 450px;
-    left: calc(50% - 225px);
+    left: calc(50% - 275px);
     position: fixed;
     top: 40px;
     z-index: 5;
@@ -37,12 +38,14 @@ body.revealed header {
     /*transform: translateY(0);*/
     /*-webkit-transform: translateY(0);*/
 }
-body.revealed header span, body.revealed header span.thin {
-    font-size: 2rem;
+body.revealed header .main-title span, body.revealed header .main-title span.thin {
+    opacity: 0;
+    display: none;
+    /*font-size: 2rem;
     color: rgba(0, 0, 0, 1);
     line-height: 4.5rem;
     padding-top: .3rem;
-    text-shadow: none;
+    text-shadow: none;*/
 }
 body.revealed header .btn-bar {
     opacity: 0;

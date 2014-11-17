@@ -23,9 +23,8 @@
     <link rel="stylesheet" href="styles/animations.css" type="text/css" />
     <link rel="stylesheet" href="styles/icomoon/style.css" type="text/css" />
 
+    <!-- <link rel="stylesheet" href="scripts/leaflet/leaflet.css" /> -->
     <!-- <script src="/socket.io/socket.io.js"></script> -->
-    <!-- <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=visualization"></script> -->
-
 </head>
 
 
@@ -78,23 +77,23 @@
         <img src="img/apple-app-store-icon.png" class="app-store" alt="appicon">
     </div> -->
 
-    <header class="main-title">
-
-        <div>
-            <span>Wikipedia</span>
+    <header>
+        <div class="main-title">
+            <span>#Wiki</span>
             <span class="thin">Wars</span>
         </div>
-
-        <div>
-            <input class="wiki-search" name="article" type="text" size="30">
-            <ul class="autocomplete">
-                <li>Chrome</li>
-                <li>Not Chrome</li>
-            </ul>
+        <div class="subtitle">
+            <p>Some articles in Wikipedia have critical content. Different interest groups all over the world try to publish their point of view in these articles. The resulting conflicts between different interest groups is well known as Worldwide Wikipedia Editor Wars! Don't be stupid and think every article is objective. Be smart and find out with our service.</p>
         </div>
 
-        <div class="subtitle">
-            <p>München steht mit ca. 5000 Kameras unter ständiger Beobachtung. Die Regierung will die Kameraüberwachung ausbauen, doch bedeuten mehr Kameras auch mehr Sicherheit? Finde es heraus!</p>
+        <div class="search-form">
+            <div class="go">GO</div>
+            <input class="wiki-search" name="article" type="text" size="30" placeholder="Find a wiki war...">
+            <ul class="autocomplete">
+                <li></li>
+                <li></li>
+                <li></li>
+            </ul>
         </div>
     </header>
 
@@ -108,6 +107,9 @@
         <!-- <section>
             <div id="map-canvas"></div>
         </section> -->
+        <section>
+            <div id="map"></div>
+        </section>
 
         <!-- <div class="caption">
             <h2>Legende:</h2>
@@ -126,6 +128,9 @@
     </div>
     <!-- <script type="text/javascript" src="data/camDataJSON.js"></script> -->
     <!-- <script type="text/javascript" src="data/crimeDataJSON.js"></script> -->
+    
+    <!-- <script src="scripts/leaflet/leaflet.js"></script> -->
+    <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=visualization"></script>
     <script type="text/javascript" src="scripts/main.js"></script>
 </body>
 

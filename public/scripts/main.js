@@ -12,7 +12,8 @@
         map, pointarray, heatmap,
         infoWindows = [],
         oCounter, cnt = 0,
-        oSearchField, url, oWikiSearchData;
+        oSearchField, url, oWikiSearchData, oAutocompleteList, aListEnries, oGoBtn,
+        iSelectedSuggest = -1;
 
     // Bootstrap
     window.addEventListener('DOMContentLoaded', function(e) {
@@ -30,9 +31,17 @@
         window.addEventListener('resize', resize);
         window.addEventListener('scroll', scroll);
         oSearchField.oninput = autocomplete;
-        // skipper.addEventListener('click', function() {
-        //     toggle(1);
-        // });
+        oSearchField.onkeyup = navigateSuggestions;
+        // oSearchField.onfocus = autocomplete(true);
+        oSearchField.onblur = hideAutocomplete;
+        // oSearchField.onchange = autocomplete;
+        for (var i = aListEnries.length - 1; i >= 0; i--) {
+            aListEnries[i].addEventListener('click', selectWikiArticle);
+        }
+        oGoBtn.addEventListener('click', function() {
+            hideAutocomplete();
+            toggle(1);
+        });
         if (!language) return;
         for (var i = 0; i < language.children.length; i++) {
             language.children[i].addEventListener('click', function(e) {
@@ -71,7 +80,7 @@
         limitLoop(animateHeaderCanvas, 60);
 
         aImgItems = document.querySelector('ul.image-wrap').children;
-        bgrInterval = setInterval(animateBackgroundTransition, 5000);
+        bgrInterval = setInterval(animateBackgroundTransition, 15000);
 
         aContactItems = document.querySelectorAll('.btn-wrapper');
 
@@ -109,45 +118,195 @@
         aAnimIn = document.querySelectorAll('.animation-init');
         language = document.getElementById('language-setting');
         oSearchField = document.querySelector(".wiki-search");
+        oAutocompleteList = document.querySelector(".autocomplete");
+        aListEnries = oAutocompleteList.querySelectorAll("li");
+        var iTranslateX = 50;
+        for (var i = aListEnries.length - 1; i >= 0; i--) {
+            iTranslateX = iTranslateX * -1;
+            aListEnries[i].style.transform = "translateX(" + iTranslateX + "%)";
+        }
+        oGoBtn = document.querySelector(".go");
 
         oContent.style.height = window.innerHeight + 'px';
         oContent.height = window.innerHeight + 'px';
 
+        var map = new google.maps.Map(document.getElementById('map'), {
+            center: new google.maps.LatLng(52.31, 13.42),
+            zoom: 3,
+            mapTypeId: google.maps.MapTypeId.ROADMAP
+        });
 
-        // AJAX Test
-        // var r = new XMLHttpRequest();
-        // r.open("GET", "http://en.wikipedia.org/w/api.php", true);
-        // r.responseType = "json";
-        // r.onreadystatechange = function() {
-        //     if (r.readyState != 4 || r.status != 200) return;
-        //     console.log(r.responseText);
-        // };
-        // r.send("action=opensearch&search=value&format=json&callback=spellcheck");
+        var world_geometry = new google.maps.FusionTablesLayer({
+            query: {
+                select: 'geometry',
+                from: '1N2LBk4JHwWpOY4d9fobIn27lfnZ5MDy-NoqqRpk',
+                where: "ISO_2DIGIT IN ('US', 'GB', 'DE')"
+            },
+            map: map,
+            suppressInfoWindows: true
+        });
+        
+        var world_geometry2 = new google.maps.FusionTablesLayer({
+            query: {
+                select: 'geometry',
+                from: '1N2LBk4JHwWpOY4d9fobIn27lfnZ5MDy-NoqqRpk',
+                where: "ISO_2DIGIT IN ('FR', 'IT', 'RU')"
+            },
+            map: map,
+            suppressInfoWindows: true
+        });
+
+        // var map = L.map('map').setView([52.31, 13.42], 3); // Berlin as start point
+        // L.tileLayer('https://{s}.tiles.mapbox.com/v3/{id}/{z}/{x}/{y}.png', {
+        //     maxZoom: 18,
+        //     minZoom: 3,
+        //     attribution: 'Footer',
+        //     // 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
+        //     // '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+        //     // 'Imagery © <a href="http://mapbox.com">Mapbox</a>',
+        //     id: 'examples.map-20v6611k',
+        //     detectRetina: true
+        //     // maxBounds:  [[30.0,-85.0],[50.0,-65.0]]
+        // }).addTo(map);
     }
 
-    function loadWikiSearch(value) {
-        if (!value)
-            return;
-        url = 'http://en.wikipedia.org/w/api.php?action=opensearch&search=' + value + '&format=json&callback=spellcheck';
-        // document.getElementById('spellcheckresult').innerHTML = 'Checking ...';
-        if (!oWikiSearchData) {
-            oWikiSearchData = document.createElement('script');
-            oWikiSearchData.setAttribute('src', url);
-            oWikiSearchData.setAttribute('type', 'text/javascript');
-            oWikiSearchData.id = "wiki-search-data";
-            document.getElementsByTagName('head')[0].appendChild(oWikiSearchData);
-        } else {
-            oWikiSearchData.setAttribute('src', url);
-            document.getElementsByTagName('head')[0].appendChild(oWikiSearchData);
+    function hideAutocomplete() {
+        var iTranslateX = -50;
+        for (var i = 0; i < aListEnries.length; i++) {
+            iTranslateX = iTranslateX * -1;
+            aListEnries[i].style.transform = "translateX(" + iTranslateX + "%)";
+            aListEnries[i].style.pointerEvents = "none";
+            aListEnries[i].style.opacity = 0;
+            aListEnries[i].visible = false;
         }
     }
 
+    function autocomplete(suppressValidation) {
+        var sSearchText = oSearchField.value;
+        if (suppressValidation != true) {
+            oSearchField.className = oSearchField.className.replace(" valid", "");
+            oGoBtn.className = oGoBtn.className.replace(" display", "");
+        }
+        if (iSelectedSuggest >= 0) {
+            aListEnries[iSelectedSuggest].className = "";
+            iSelectedSuggest = -1;
+        }
 
-    function autocomplete(e) {
+        // Input validation
+        sSearchText = sSearchText.replace(/[%?=&]/ig, ""); ///\W/gi, "");
+        oSearchField.value = sSearchText;
+
+        // AJAX Test
+        var r = new XMLHttpRequest();
+        r.open("GET", "/revisions/suggest?search=" + sSearchText + "&limit=4", true);
+        r.responseType = "json";
+        r.onreadystatechange = function() {
+            if (r.readyState != 4 || r.status != 200) return;
+            var iTranslateX = -50;
+            // if (r.response[1].length >= 1) {
+            for (var i = 0; i < aListEnries.length; i++) {
+                var sSuggestedTerm = r.response[1][i + 1];
+                if (sSuggestedTerm != undefined) {
+                    aListEnries[i].innerHTML = "<span class='highlight'>" +
+                        sSuggestedTerm.slice(0, sSearchText.length) +
+                        "</span>" +
+                        sSuggestedTerm.slice(sSearchText.length, sSuggestedTerm.length);
+                    aListEnries[i].setAttribute("data-article", sSuggestedTerm);
+                }
+
+                if (sSuggestedTerm != undefined) {
+                    aListEnries[i].style.transform = "translateX(0)";
+                    aListEnries[i].style.pointerEvents = "auto";
+                    aListEnries[i].style.opacity = 1;
+                    aListEnries[i].visible = true;
+                } else {
+                    iTranslateX = iTranslateX * -1;
+                    aListEnries[i].style.transform = "translateX(" + iTranslateX + "%)";
+                    aListEnries[i].style.pointerEvents = "none";
+                    aListEnries[i].style.opacity = 0;
+                    aListEnries[i].visible = false;
+                }
+                if (sSuggestedTerm == sSearchText && sSuggestedTerm != undefined) {
+                    oSearchField.className += " valid";
+                    oGoBtn.className += " display";
+                }
+            }
+        }
+        r.send();
+    }
+
+    function selectWikiArticle(e, articleName) {
+        if (!articleName) {
+            var e = e || window.event;
+            var oWikiListItem = e.currentTarget;
+            var sArticleName = oWikiListItem.getAttribute("data-article");
+        } else {
+            sArticleName = articleName;
+        }
+
+        // Clear Classes
+        oSearchField.className = oSearchField.className.replace(" valid", "");
+        oGoBtn.className = oGoBtn.className.replace(" display", "");
+
+        // Set Classes
+        oSearchField.value = sArticleName;
+        oSearchField.className += " valid";
+        oGoBtn.className += " display";
+        autocomplete(true);
+    }
+
+    function navigateSuggestions(e) {
         var e = e || window.event;
-        var sSearchText = e.currentTarget.value;
-        console.log(sSearchText);
-        loadWikiSearch(sSearchText);
+        var iAvailableEntries;
+        for (var i = aListEnries.length - 1; i >= 0; i--) {
+            if (aListEnries[i].style.opacity == 1) {
+                iAvailableEntries = i + 1;
+                break;
+            }
+        }
+        switch (e.keyCode) {
+            case 33: // Page Up
+            case 38: // Arrow Up
+                // case 37: // Arrow Left
+                e.preventDefault();
+                if (iSelectedSuggest < 0) {
+                    iSelectedSuggest = iAvailableEntries - 1;
+                    aListEnries[iSelectedSuggest].className = "selected";
+                } else {
+                    aListEnries[iSelectedSuggest].className = "";
+                    iSelectedSuggest = (iSelectedSuggest + iAvailableEntries - 1) % iAvailableEntries;
+                    aListEnries[iSelectedSuggest].className = "selected";
+                }
+                break;
+            case 9: // Tab
+                // Is not working, yet
+            case 34: // Page Down
+                // case 39: // Arrow Right
+            case 40: // Arrow Down
+                if (iSelectedSuggest < 0) {
+                    iSelectedSuggest = 0;
+                    aListEnries[iSelectedSuggest].className = "selected";
+                } else {
+                    aListEnries[iSelectedSuggest].className = "";
+                    iSelectedSuggest = (iSelectedSuggest + 1) % iAvailableEntries;
+                    aListEnries[iSelectedSuggest].className = "selected";
+                }
+                break;
+            case 13: // ENTER
+                if (iSelectedSuggest == -1 && oSearchField.classList.contains("valid")) {
+                    toggle(1);
+                } else if (iAvailableEntries > 0 && iSelectedSuggest >= 0) {
+                    e.preventDefault();
+                    aListEnries[iSelectedSuggest].className = "";
+                    e.currentTarget = aListEnries[iSelectedSuggest];
+                    selectWikiArticle(e, aListEnries[iSelectedSuggest].getAttribute("data-article"));
+                    iSelectedSuggest = -1;
+                }
+                hideAutocomplete();
+                break;
+            default:
+                return;
+        };
     }
 
     function languageDialog() {
@@ -203,9 +362,9 @@
             return false;
         }
         if (scrollVal <= 0 && isRevealed) {
-            toggle(0);
+            // toggle(0);
         } else if (scrollVal > 0 && !isRevealed) {
-            toggle(1);
+            // toggle(1);
         }
 
         // Animate Sections
@@ -378,22 +537,3 @@
         };
     }
 })();
-
-var spellcheck = function(data) {
-    var found = false;
-    var text = data[0];
-    if (text != text) //document.getElementById('spellcheckinput').value)
-        return;
-    for (i = 0; i < data[1].length; i++) {
-        if (text.toLowerCase() == data[1][i].toLowerCase()) {
-            found = true;
-            var url = 'http://en.wikipedia.org/wiki/' + text;
-            console.log("Correct");
-            console.log(data);
-            // document.getElementById('spellcheckresult').innerHTML = '<b style="color:green">Correct</b> - <a target="_top" href="' + url + '">link</a>';
-        }
-    }
-    if (!found)
-        console.log("Not Found");
-    // document.getElementById('spellcheckresult').innerHTML = '<b style="color:red">Incorrect</b>';
-};
