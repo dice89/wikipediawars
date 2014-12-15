@@ -210,7 +210,8 @@ public class WikiController extends Controller {
 					return internalServerError("Wikipedia API Error");
 				}
 				JsonNode resp = Json.toJson(revision_summary_object);
-				Cache.set(cachekey, Json.stringify(resp));
+				
+				Cache.set(cachekey, Json.stringify(resp),60*24);
 				return ok(resp);
 			}
 		});
