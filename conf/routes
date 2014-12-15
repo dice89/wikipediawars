@@ -3,6 +3,7 @@
 # ~~~~
 
 # Home page
+GET        /                                    controllers.Assets.at(path="/public/", file="index.html")
 GET        /revisions/analyse/:article          controllers.WikiController.analyze(article : String, timescope:  String, aggregation :String)
 GET        /revisions/guesstime/:article        controllers.WikiController.guessAnalyzeTime(article : String, timescope:  String)
 GET        /revisions/suggest                   controllers.WikiController.suggest(search :String, limit : Integer)
