@@ -1,14 +1,14 @@
 package controllers;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.TimeZone;
+import java.util.*;
+import java.util.stream.Stream;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -38,11 +38,23 @@ public class WikiController extends Controller {
 	public static final String CACHE_WIKI_PREFIX = "wiki";
 
 	public static final int TOP_K_DISCUSSED_TERMS = 30;
+	private static final long TIMEOUT = 5000;
 
 	// Enum for timeScoe
 	public enum TimeScope {
 		MONTH, SIXMONTH, YEAR
 	}
+
+	public static final List<String> nations() {
+		List<String> nations = null;
+		try {
+			if (nations == null) nations = Files.readAllLines(new File("public/data/un_nations.txt").toPath(), Charset.forName("UTF-8"));
+			return nations;
+		} catch (IOException e) {
+			return new ArrayList<>();
+		}
+	}
+
 
 	public static Promise<Result> guessAnalyzeTime(final String article,
 			final String time_scope) {
@@ -339,24 +351,41 @@ public class WikiController extends Controller {
 	 *
 	 * @return
 	 */
-	public static Promise<Result> geoForRegisteredUsers(String userName) {
-		String url = "http://en.wikipedia.org/wiki/"+userName;
+	public static Result geoForRegisteredUsers(String userName) {
+		return ok(tryGeoHeuristicRegisteredUsers(userName).orElse("not nation found"));
+	}
+
+	/**
+	 * Heuristic to extract the nationality form a wikipedia user page
+	 *
+	 * @return
+	 */
+	public static Optional<String> tryGeoHeuristicRegisteredUsers(String userName) {
+		String url = "http://en.wikipedia.org/wiki/User:"+userName;
 		return WS.url(url).get().map(response -> {
 					Document doc = Jsoup.parse(response.getBody());
 					Elements contentLinks = doc.getElementById("bodyContent").getElementsByTag("a");
 					String s = "";
+					List<String> candidates = new ArrayList<>();
 
 					for (Element e: contentLinks) {
-						Logger.debug(e.attr("href"));
+
 						String[] parts = e.attr("href").split("/");
 						if (parts[parts.length-1].contains(":")) continue;
 						if (parts[parts.length-1].contains("#")) continue;
-						s += e.attr("href")+"\n";
+
+						s += parts[parts.length-1];
+						Logger.debug(s);
+						candidates.add(parts[parts.length-1].trim());
 					}
 
-					return ok(s);
+					Optional<String> nation = candidates.stream().filter(can ->
+									nations().stream().anyMatch(na -> na.equalsIgnoreCase(can))
+					).findFirst();
+
+					return nation;
 				}
-		);
+		).get(TIMEOUT);
 	}
 
 }
