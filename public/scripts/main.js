@@ -130,28 +130,126 @@
         oContent.style.height = window.innerHeight + 'px';
         oContent.height = window.innerHeight + 'px';
 
-        var map = new google.maps.Map(document.getElementById('map'), {
-            center: new google.maps.LatLng(52.31, 13.42),
-            zoom: 3,
-            mapTypeId: google.maps.MapTypeId.ROADMAP
+        // Map Style made with http://gmaps-samples-v3.googlecode.com/svn/trunk/styledmaps/wizard/index.html
+        var mapStyle = [{
+            "featureType": "water",
+            "elementType": "labels",
+            "stylers": [{
+                "visibility": "off"
+            }]
+        }, {
+            "featureType": "transit",
+            "stylers": [{
+                "visibility": "off"
+            }]
+        }, {
+            "featureType": "road",
+            "stylers": [{
+                "visibility": "off"
+            }]
+        }, {
+            "featureType": "poi",
+            "stylers": [{
+                "visibility": "off"
+            }]
+        }, {
+            "featureType": "landscape",
+            "stylers": [{
+                "visibility": "simplified"
+            }, {
+                "color": "#ffffff"
+            }]
+        }, {
+            "featureType": "administrative.land_parcel",
+            "stylers": [{
+                "visibility": "off"
+            }]
+        }, {
+            "featureType": "administrative.neighborhood",
+            "stylers": [{
+                "visibility": "off"
+            }]
+        }, {
+            "featureType": "administrative.province",
+            "stylers": [{
+                "visibility": "off"
+            }]
+        }, {
+            "featureType": "administrative.locality",
+            "elementType": "labels",
+            "stylers": [{
+                "visibility": "off"
+            }]
+        }, {
+            "featureType": "administrative.country",
+            "elementType": "geometry",
+            "stylers": [{
+                "color": "#cccccc"
+            }]
+        }, {
+            "featureType": "administrative.country",
+            "elementType": "labels.text.fill",
+            "stylers": [{
+                "color": "#555555"
+            }]
+        }];
+
+        // Create a new StyledMapType object
+        var styledMap = new google.maps.StyledMapType(mapStyle, {
+            name: "WikiWars Map"
         });
+
+        var berlin = new google.maps.LatLng(52.31, 13.42);
+
+        var map = new google.maps.Map(document.getElementById('map'), {
+            center: berlin,
+            zoom: 3,
+            mapTypeControlOptions: {
+                mapTypeIds: [google.maps.MapTypeId.ROADMAP, 'map_style']
+            },
+            mapTypeControl: false,
+            streetViewControl: false
+        });
+
+        map.mapTypes.set('map_style', styledMap);
+        map.setMapTypeId('map_style');
 
         var world_geometry = new google.maps.FusionTablesLayer({
             query: {
                 select: 'geometry',
-                from: '1N2LBk4JHwWpOY4d9fobIn27lfnZ5MDy-NoqqRpk',
-                where: "ISO_2DIGIT IN ('US', 'GB', 'DE')"
+                from: '1N2LBk4JHwWpOY4d9fobIn27lfnZ5MDy-NoqqRpk'
             },
-            map: map,
-            suppressInfoWindows: true
-        });
-        
-        var world_geometry2 = new google.maps.FusionTablesLayer({
-            query: {
-                select: 'geometry',
-                from: '1N2LBk4JHwWpOY4d9fobIn27lfnZ5MDy-NoqqRpk',
-                where: "ISO_2DIGIT IN ('FR', 'IT', 'RU')"
-            },
+            styles: [{
+                markerOptions: {
+                    iconName: "large_green"
+                },
+                polygonOptions: {
+                    fillColor: '#ffffff',
+                    strokeColor: "#ffffff",
+                    strokeWeight: 0,
+                    fillOpacity: 0
+                },
+                polylineOptions: {
+                    strokeColor: "#ffffff",
+                    strokeWeight: 0
+                }
+            }, {
+                where: "ISO_2DIGIT IN ('FR', 'VA', 'RU')",
+                polygonOptions: {
+                    fillColor: '#ff0000',
+                    strokeColor: "#ff0000",
+                    strokeWeight: 0.5,
+                    fillOpacity: 0.9
+                }
+            }, {
+                where: "ISO_2DIGIT IN ('US', 'GB', 'DE')",
+                polygonOptions: {
+                    fillColor: '#ff3300',
+                    strokeColor: "#ff3300",
+                    strokeWeight: 0.5,
+                    fillOpacity: 0.5
+                }
+            }],
             map: map,
             suppressInfoWindows: true
         });
