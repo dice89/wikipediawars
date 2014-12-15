@@ -375,7 +375,7 @@ public class WikiController extends Controller {
 						if (parts[parts.length-1].contains("#")) continue;
 
 						s += parts[parts.length-1];
-						Logger.debug(s);
+//						Logger.debug(s);
 						candidates.add(parts[parts.length-1].trim());
 					}
 
