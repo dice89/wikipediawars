@@ -8,6 +8,7 @@ GET        /revisions/analyse/:article          controllers.WikiController.analy
 GET        /revisions/guesstime/:article        controllers.WikiController.guessAnalyzeTime(article : String, timescope:  String)
 GET        /revisions/suggest                   controllers.WikiController.suggest(search :String, limit : Integer)
 GET        /usergeo/:user                       controllers.WikiController.geoForRegisteredUsers(user: String)
+GET        /test						        controllers.WikiController.smallTest()
 # Map static resources from the /public folder to the /assets URL path
 GET        /assets/*file                        controllers.Assets.at(path="/public", file)
 GET        /*file                               controllers.Assets.at(path="/public", file)

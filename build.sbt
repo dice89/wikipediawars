@@ -16,7 +16,8 @@ libraryDependencies ++= Seq(
   "com.typesafe.play.plugins" %% "play-plugins-redis" % "2.3.1",
   "org.jsoup" % "jsoup" % "1.8.1",
   "org.apache.lucene" % "lucene-core" % "4.10.1",
-  "org.apache.lucene" % "lucene-analyzers-common" % "4.10.1"
+  "org.apache.lucene" % "lucene-analyzers-common" % "4.10.1",
+  "redis.clients" % "jedis" % "2.6.0"
 )
 
 resolvers ++= Seq(
