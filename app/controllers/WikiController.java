@@ -20,6 +20,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import play.cache.Cache;
+import play.libs.F;
 import play.libs.F.Function;
 import play.libs.F.Function0;
 import play.libs.F.Promise;
@@ -35,6 +36,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import controllers.util.CombinedJSONResponse;
 import controllers.util.CombinedResponses;
+import de.w4.analyzer.UserAnalyzer;
 import de.w4.analyzer.WikiAnalyzer;
 import de.w4.analyzer.util.RevisionAnalysisResultObject;
 import de.w4.analyzer.util.RevisionList;
@@ -42,16 +44,16 @@ import de.w4.analyzer.util.RevisionList;
 public class WikiController extends Controller {
 
 	public static final String REDIS_HOST = "localhost";
-	public static final int REDIS_PORT =6379;
-	
+	public static final int REDIS_PORT = 6379;
+
 	public static final String REDIS_USER_SET_NAME = "W_USER";
-	
+
 	public static final String CACHE_WIKI_PREFIX = "wiki";
-	
-	private static Jedis jedis = new Jedis(REDIS_HOST,REDIS_PORT);
+
+	private static Jedis jedis = new Jedis(REDIS_HOST, REDIS_PORT);
 
 	public static final int TOP_K_DISCUSSED_TERMS = 30;
-	private static final long TIMEOUT = 5000;
+	private static final long TIMEOUT = 40000;
 
 	// Enum for timeScoe
 	public enum TimeScope {
@@ -296,49 +298,33 @@ public class WikiController extends Controller {
 
 	}
 
-	public static Promise<Result> smallTest() {
-		
-		//action=query&list=allusers&aufrom=Y&aulimit=max
+	public static Result extractUserNation() {
+
+		UserAnalyzer.analyze();
+		return ok("Nations Extraction Tasks triggered");
+	}
+
+	public static Result extractWikiUsers() {
+
+		// action=query&list=allusers&aufrom=Y&aulimit=max
 		WSRequestHolder holder = WS.url("http://en.wikipedia.org/w/api.php");
 		holder = holder.setQueryParameter("format", "json")
 				.setQueryParameter("action", "query")
 				.setQueryParameter("list", "allusers")
-				.setQueryParameter("aufrom", "A")
+				.setQueryParameter("aufrom", "Jsa")
 				.setQueryParameter("aulimit", "max")
 				.setQueryParameter("auwitheditsonly", "true");
 
-		// 		.setQueryParameter("auactiveusers", "true")
-				
+		// .setQueryParameter("auactiveusers", "true")
+
 		holder = holder.setHeader("User-Agent", "Wikpedia Wars Application");
 
-		List<JsonNode> responses = new ArrayList<JsonNode>();
+		extractWikiUsers(Optional.empty(), "aufrom", holder);
 
-		Promise<Object> test = test(responses, Optional.empty(), "aufrom",
-				holder);
-		
-		Promise<Result> bla = test.map(response -> {
-			CombinedJSONResponse all_result = ((CombinedJSONResponse) response);
-
-			all_result.getResponses().stream()
-					.forEach(elm -> {
-
-					
-						elm.get("query").findPath("allusers").forEach(user -> {
-							//System.out.println(user);
-							jedis.sadd(REDIS_USER_SET_NAME, user.findValue("name").asText());
-	
-							//System.out.println(user.findValue("name"));
-						});
-					});
-
-			return ok("test");
-
-		});
-
-		return bla;
+		return ok("Wikipedia Users Extraction Task triggered");
 	}
 
-	private static Promise<Object> test(final List<JsonNode> responses,
+	private static Promise<Object> extractWikiUsers(
 			final Optional<String> query_continue_value,
 			final String continue_field, final WSRequestHolder holder) {
 
@@ -355,48 +341,49 @@ public class WikiController extends Controller {
 		holder.getQueryParameters()
 				.keySet()
 				.forEach(
-						key -> {	
-							holder_new.setQueryParameter(key, holder.getQueryParameters().get(key).iterator().next());
+						key -> {
+							holder_new.setQueryParameter(key, holder
+									.getQueryParameters().get(key).iterator()
+									.next());
 						});
-		if(query_continue_value.isPresent()){
+		if (query_continue_value.isPresent()) {
 			holder_new.setQueryParameter(continue_field,
 					query_continue_value.get());
 		}
 
-		return holder_new.get()
-				.flatMap(
-						response -> {
-							JsonNode json_response = response.asJson();
-							responses.add(json_response);
-							if (! json_response.has("query-continue")) {
-								
-							
+		return holder_new.get().flatMap(
+				response -> {
+					JsonNode json_response = response.asJson();
+					json_response
+							.get("query")
+							.findPath("allusers")
+							.forEach(
+									user -> {
+										jedis.sadd(REDIS_USER_SET_NAME, user
+												.findValue("name").asText());
+									});
 
-								Promise<Object> response_promise = Promise
-										.promise(() -> new CombinedJSONResponse(responses));
-								return response_promise;
-							} else {
-								System.out.println(json_response
-										.findPath("query-continue"));
-								Optional<String> continue_value = Optional
-										.ofNullable(json_response
-												.findPath("query-continue")
-												.findPath("allusers")
-												.findPath(continue_field).asText()
-												.toString().replace(" ", "_"));
-			
-								System.out.println("Continue with"
-										+ continue_value.orElse("nix da"));
-								return test(responses, continue_value,
-										continue_field, holder);
-							}
+					// responses.add(json_response);
+					if (!json_response.has("query-continue")) {
+						Promise<Object> response_promise = Promise
+								.promise(() -> new CombinedJSONResponse(null));
+						return response_promise;
+					} else {
+						System.out.println(json_response
+								.findPath("query-continue"));
+						Optional<String> continue_value = Optional
+								.ofNullable(json_response
+										.findPath("query-continue")
+										.findPath("allusers")
+										.findPath(continue_field).asText()
+										.toString().replace(" ", "_"));
 
-						});
+						System.out.println("Continue with"
+								+ continue_value.orElse("nix da"));
+						return extractWikiUsers(continue_value, continue_field, holder);
+					}
 
-		/*
-		 * Promise<JsonNode> promise = holder.get().map(response -> { return
-		 * response.asJson(); });
-		 */
+				});
 
 	}
 
