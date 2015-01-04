@@ -1,7 +1,12 @@
 package controllers;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URI;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.text.DateFormat;
@@ -19,8 +24,8 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import play.Play;
 import play.cache.Cache;
-import play.libs.F;
 import play.libs.F.Function;
 import play.libs.F.Function0;
 import play.libs.F.Promise;
@@ -61,16 +66,46 @@ public class WikiController extends Controller {
 	}
 
 	public static final List<String> nations() {
-		List<String> nations = null;
 		try {
-			if (nations == null)
-				nations = Files.readAllLines(new File(
-						"public/data/un_nations.txt").toPath(), Charset
-						.forName("UTF-8"));
+			
+			InputStream stream = Play.application().classloader().getResourceAsStream("public/data/un_nations.txt");
+			BufferedReader br = new BufferedReader(new InputStreamReader( stream));
+			List<String> nations = new ArrayList<String>();
+			
+			String theLine = null;
+			while((theLine = br.readLine())!= null){
+				nations.add(theLine);
+			}
 			return nations;
-		} catch (IOException e) {
-			return new ArrayList<>();
+			
+		} catch (Exception e){
+			System.out.println(e);
+			return new ArrayList<String>();
 		}
+	}
+	
+	
+	public static Result testFile(){
+		
+		try {
+		
+			InputStream stream = Play.application().classloader().getResourceAsStream("public/data/un_nations.txt");
+			BufferedReader br = new BufferedReader(new InputStreamReader( stream));
+			List<String> nations = new ArrayList<String>();
+			
+			String theLine = null;
+			while((theLine = br.readLine())!= null){
+				nations.add(theLine);
+			}
+			
+		} catch (Exception e){
+
+			System.out.println(e);
+		}
+			//Files.readAllLines(new File(Play.application().classloader().getResource("data/un_nations.txt").toString()).toPath(), Charset.forName("UTF-8"));
+			return ok("found");
+		
+		
 	}
 
 	public static Promise<Result> guessAnalyzeTime(final String article,
@@ -239,6 +274,8 @@ public class WikiController extends Controller {
 
 		return resultPromise;
 	}
+	
+	
 
 	private static String getCacheKey(final String article,
 			final String time_scope, final int aggregation_type) {

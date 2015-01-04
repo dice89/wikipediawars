@@ -1,7 +1,12 @@
 package de.w4.analyzer.wikiuser;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URI;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -16,6 +21,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import play.Logger;
+import play.Play;
 import play.libs.ws.WS;
 import redis.clients.jedis.Jedis;
 import scala.Option;
@@ -146,15 +152,23 @@ public class NationExtractionWorker extends UntypedActor {
 	}
 	
 	public static final List<String> nations() {
-		List<String> nations = null;
 		try {
-			if (nations == null)
-				nations = Files.readAllLines(new File(
-						"public/data/un_nations.txt").toPath(), Charset
-						.forName("UTF-8"));
+			
+			InputStream stream = Play.application().classloader().getResourceAsStream("public/data/un_nations.txt");
+			BufferedReader br = new BufferedReader(new InputStreamReader( stream));
+			List<String> nations = new ArrayList<String>();
+			
+			String theLine = null;
+			while((theLine = br.readLine())!= null){
+				nations.add(theLine);
+			}
 			return nations;
-		} catch (IOException e) {
-			return new ArrayList<>();
+			
+		} catch (Exception e){
+			Logger.debug("No File Found");
+			System.out.println(e);
+			return new ArrayList<String>();
 		}
 	}
+	
 }
