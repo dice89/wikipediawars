@@ -33,7 +33,7 @@ public class NationExtractionRunner extends UntypedActor {
 		this.size_of_user_list_chunk = size_of_user_list_chunk;
 
 		workerRouter = getContext().actorOf(
-				new RoundRobinPool(no_of_worker).props(Props
+				new RoundRobinPool(this.no_of_worker).props(Props
 						.create(NationExtractionWorker.class)), "router");
 
 		this.listener = listener;
@@ -55,7 +55,7 @@ public class NationExtractionRunner extends UntypedActor {
 			int group_size = ((int) Math
 					.floor((((double) user_names.size()) / ((double) size_of_user_list_chunk))));
 
-			Logger.debug("Configuration results into chunk size of: "
+			Logger.debug("Configuration results in chunk size of: "
 					+ group_size);
 
 			List<String> sub_group = new ArrayList<String>();
@@ -67,7 +67,7 @@ public class NationExtractionRunner extends UntypedActor {
 				// the last group
 				if ((((i % group_size) == 0) && i > 0)
 						|| (i == user_names.size() - 1)) {
-					Logger.debug("Starting extraction tasks for id:" + i);
+					
 					workerRouter.tell(new ExtractionTask(sub_group), getSelf());
 					sub_group = new ArrayList<String>();
 				}

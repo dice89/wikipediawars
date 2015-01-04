@@ -17,25 +17,43 @@ import org.jsoup.select.Elements;
 
 import play.Logger;
 import play.libs.ws.WS;
+import redis.clients.jedis.Jedis;
+import scala.Option;
 import akka.actor.ActorRef;
 import akka.actor.Props;
 import akka.actor.UntypedActor;
+import controllers.WikiController;
 import de.w4.analyzer.wikiuser.messages.ExtractionTask;
 import de.w4.analyzer.wikiuser.messages.ExtractionTaskResult;
 
 public class NationExtractionWorker extends UntypedActor {
 	
 	private List<String> nation_list = nations();
-
+	private Jedis jedis;
+	
 	@Override
 	public void onReceive(Object message) throws Exception {
+		
 		if (message instanceof ExtractionTask) {
+			this.jedis = new Jedis(WikiController.REDIS_HOST, WikiController.REDIS_PORT);
+		
 			ExtractionTask task = (ExtractionTask) message;	
+			
+			Logger.debug("Got Extraction Task for size of: " + task.getWikipedia_user_names().size());
 			ExtractionTaskResult result = extractionNationsForUsers(task);
 			
-			final ActorRef saver = getContext().actorOf(
-					Props.create(NationExtractionSaver.class), "saver");
+			ActorRef saver = null;
+			Option<ActorRef> saver_ref = getContext().child("saver");
+			
+			if(saver_ref.isDefined()){
+				saver = saver_ref.get();
+			}else {
+				 saver = getContext().actorOf(
+						Props.create(NationExtractionSaver.class), "saver");
+			}
+			
 			saver.tell(result, getSelf());
+	
 		}
 	}
 
@@ -74,9 +92,12 @@ public class NationExtractionWorker extends UntypedActor {
 			
 
 			if (result.isPresent()) {
-				System.out.println("found nation for " + wiki_user_name +" " + result.get() );
+				Logger.debug("found nation for " + wiki_user_name +" " + result.get());
+				//System.out.println("found nation for " + wiki_user_name +" " + result.get() );
 			
-			} 
+			} else {
+				//Logger.debug("no nation found for " + wiki_user_name);
+			}
 
 			return result;
 

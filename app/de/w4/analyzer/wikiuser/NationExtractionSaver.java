@@ -10,20 +10,15 @@ import akka.actor.UntypedActor;
 public class NationExtractionSaver extends UntypedActor {
 	
 	private Jedis jedis;
+
 	
-
-	public NationExtractionSaver() {
-		super();
-		this.jedis = new Jedis(WikiController.REDIS_HOST, WikiController.REDIS_PORT);
-	}
-
-
-
 	@Override
 	public void onReceive(Object message) throws Exception {
 		if (message instanceof ExtractionTaskResult) {
+			
+			this.jedis = new Jedis(WikiController.REDIS_HOST, WikiController.REDIS_PORT);
 			ExtractionTaskResult result = (ExtractionTaskResult) message;
-			//Logger.debug("Received Save Task");
+			Logger.debug("Received Save Task");
 	
 			result.getExtracted_nations_per_user()
 					.forEach((name, nation) -> {
@@ -35,8 +30,8 @@ public class NationExtractionSaver extends UntypedActor {
 						}
 					});
 			
-			getContext().actorSelection("/user/listener").tell(new ExtractionTaskDone(0, result.getExtracted_nations_per_user().size()), getSelf());
-			getContext().stop(getSelf());
+			getContext().actorSelection("/user/listener").tell(new ExtractionTaskDone(result.getTime_used(), result.getExtracted_nations_per_user().size()), getSelf());
+
 		}
 		
 	}

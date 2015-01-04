@@ -14,10 +14,15 @@ public class ResultListener extends UntypedActor {
 	
 	private ActorRef master;
 
+	final private long starttime;
+	
+	private long aggregated_time;
 	public ResultListener(int size) {
 		super();
 		this.size = size;
 		this.received_size = 0;
+		starttime = System.currentTimeMillis();
+		aggregated_time = 0;
 	}
 
 	@Override
@@ -26,16 +31,20 @@ public class ResultListener extends UntypedActor {
 		if(message instanceof ExtractionStart) {
 			master = getSender();
 		}else if (message instanceof ExtractionTaskDone) {
+			long time_used = System.currentTimeMillis() - starttime;
 			ExtractionTaskDone result = (ExtractionTaskDone) message;
-			
+
 			//update received size
 			received_size = received_size + result.getUser_extracted();
 			
-			Logger.debug("Total Extracted Users:" + received_size);
+			aggregated_time = aggregated_time+ result.getTotaltime();
+			
+			Logger.debug("Total Extracted Users:" + received_size + "in total tim " + time_used + " with working time "+ aggregated_time);
 			//Stopping Condition
 			if(received_size >= size){
+			
 				Logger.debug("Extraction done:" + received_size);
-				master.tell(new ExtractionTaskDone(0, received_size), getSelf());
+				master.tell(new ExtractionTaskDone(time_used, received_size), getSelf());
 				
 			}			
 		}

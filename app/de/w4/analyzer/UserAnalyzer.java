@@ -76,7 +76,7 @@ public class UserAnalyzer {
 				"listener");
 
 		ActorRef master = system.actorOf(Props.create(
-				NationExtractionRunner.class, 20, 10000, listener, user_list),
+				NationExtractionRunner.class, 10, 100000, listener, user_list),
 				"master");
 
 	}
