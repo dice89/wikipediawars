@@ -1,14 +1,8 @@
 package de.w4.analyzer.wikiuser;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.URI;
-import java.net.URL;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -23,26 +17,23 @@ import org.jsoup.select.Elements;
 import play.Logger;
 import play.Play;
 import play.libs.ws.WS;
-import redis.clients.jedis.Jedis;
 import scala.Option;
 import akka.actor.ActorRef;
 import akka.actor.Props;
 import akka.actor.UntypedActor;
-import controllers.WikiController;
 import de.w4.analyzer.wikiuser.messages.ExtractionTask;
 import de.w4.analyzer.wikiuser.messages.ExtractionTaskResult;
 
 public class NationExtractionWorker extends UntypedActor {
 	
-	private List<String> nation_list = nations();
-	private Jedis jedis;
+	private Map<String,String> nation_map = nations();
+
 	
 	@Override
 	public void onReceive(Object message) throws Exception {
 		
 		if (message instanceof ExtractionTask) {
-			this.jedis = new Jedis(WikiController.REDIS_HOST, WikiController.REDIS_PORT);
-		
+
 			ExtractionTask task = (ExtractionTask) message;	
 			
 			Logger.debug("Got Extraction Task for size of: " + task.getWikipedia_user_names().size());
@@ -125,7 +116,8 @@ public class NationExtractionWorker extends UntypedActor {
 					Document doc = Jsoup.parse(response.getBody());
 					Elements contentLinks = doc.getElementById("bodyContent")
 							.getElementsByTag("a");
-					String s = "";
+
+					//String s = "";
 					List<String> candidates = new ArrayList<>();
 
 					for (Element e : contentLinks) {
@@ -136,38 +128,47 @@ public class NationExtractionWorker extends UntypedActor {
 						if (parts[parts.length - 1].contains("#"))
 							continue;
 
-						s += parts[parts.length - 1];
+						//s += parts[parts.length - 1];
 						// Logger.debug(s);
 						candidates.add(parts[parts.length - 1].trim());
 					}
 
 					Optional<String> nation = candidates
 							.stream()
-							.filter(can -> nation_list.stream().anyMatch(
+							.filter(can -> nation_map.keySet().stream().anyMatch(
 									na -> na.equalsIgnoreCase(can)))
 							.findFirst();
+					
+					if (nation.isPresent()){
+						nation = Optional.of(nation_map.get(nation.get()));
+					}
+					
 					return nation;
 			
 				}).get(5000);
 	}
 	
-	public static final List<String> nations() {
+	public static final Map<String,String> nations() {
 		try {
 			
-			InputStream stream = Play.application().classloader().getResourceAsStream("public/data/un_nations.txt");
+			InputStream stream = Play.application().classloader().getResourceAsStream("public/data/combined_iso.txt");
 			BufferedReader br = new BufferedReader(new InputStreamReader( stream));
-			List<String> nations = new ArrayList<String>();
+			Map<String,String> nations = new HashMap<String,String>();
 			
 			String theLine = null;
 			while((theLine = br.readLine())!= null){
-				nations.add(theLine);
+				String[] elements = theLine.split(";");
+				if (elements.length > 0 ){
+					nations.put(elements[0], elements[1]);
+				}
+
 			}
 			return nations;
 			
 		} catch (Exception e){
 			Logger.debug("No File Found");
 			System.out.println(e);
-			return new ArrayList<String>();
+			return new HashMap<String,String>();
 		}
 	}
 	

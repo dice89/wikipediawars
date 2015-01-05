@@ -1,14 +1,9 @@
 package controllers;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.URI;
-import java.net.URL;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -24,6 +19,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import play.Logger;
 import play.Play;
 import play.cache.Cache;
 import play.libs.F.Function;
@@ -52,6 +48,7 @@ public class WikiController extends Controller {
 	public static final int REDIS_PORT = 6379;
 
 	public static final String REDIS_USER_SET_NAME = "W_USER";
+	public static final String REDIS_NATION_HASH_NAME = "USER_NATION_HASH";
 
 	public static final String CACHE_WIKI_PREFIX = "wiki";
 
@@ -210,7 +207,8 @@ public class WikiController extends Controller {
 			Promise<Result> promiseOfResult = Promise
 					.promise(new Function0<Result>() {
 						public Result apply() {
-							System.out.println("served from cache");
+							Logger.debug("served from cache");
+							
 							return ok(Json.parse(cache));
 						}
 					});
@@ -222,7 +220,6 @@ public class WikiController extends Controller {
 				false).map(new Function<CombinedResponses, Result>() {
 			public Result apply(CombinedResponses responses) {
 				// now let the magic begin
-
 				JsonNode jsonbody = null;
 
 				List<JsonNode> revision_array = new ArrayList<JsonNode>();
@@ -231,8 +228,9 @@ public class WikiController extends Controller {
 					try {
 						jsonbody = response.asJson();
 					} catch (Exception e) {
-
-						System.out.println(e);
+						
+						Logger.error(e.getMessage());
+						
 						return returnEmptyResult();
 					}
 
@@ -249,7 +247,8 @@ public class WikiController extends Controller {
 
 					// now turn this to the revisions_analyzer
 				}
-				System.out.println("Data retrieved now analyse it!");
+				Logger.debug("Data retrieved now analyse it!");
+
 				// first merge revisions arrays together to only have one
 				RevisionAnalysisResultObject revision_summary_object = null;
 				try {
@@ -257,7 +256,7 @@ public class WikiController extends Controller {
 							.analyzeGeoOrigin(revision_array,
 									TOP_K_DISCUSSED_TERMS, aggregation_type);
 				} catch (IOException | ParseException e) {
-					System.out.println("fail");
+					Logger.error("Analysis Failed");
 					return internalServerError(e.getMessage());
 				}
 
@@ -450,7 +449,6 @@ public class WikiController extends Controller {
 					.setQueryParameter("rvlimit", "max");
 			;
 		}
-		System.out.println("Date String:" + end_date_utc_string);
 
 		if (continue_revision != null) {
 			holder = holder.setQueryParameter("rvcontinue", continue_revision);
@@ -503,7 +501,7 @@ public class WikiController extends Controller {
 	 */
 	public static Result geoForRegisteredUsers(String userName) {
 		return ok(tryGeoHeuristicRegisteredUsers(userName).orElse(
-				"not nation found"));
+				"no nation found"));
 	}
 
 	/**
@@ -511,6 +509,7 @@ public class WikiController extends Controller {
 	 *
 	 * @return
 	 */
+	@Deprecated
 	public static Optional<String> tryGeoHeuristicRegisteredUsers(
 			String userName) {
 		String url = "http://en.wikipedia.org/wiki/User:" + userName;

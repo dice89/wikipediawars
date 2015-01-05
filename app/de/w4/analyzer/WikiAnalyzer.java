@@ -37,9 +37,12 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import redis.clients.jedis.Jedis;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.maxmind.geoip2.exception.GeoIp2Exception;
 
+import controllers.WikiController;
 import de.w4.analyzer.ipgeoloc.GeoObject;
 import de.w4.analyzer.ipgeoloc.IPLocExtractor;
 import de.w4.analyzer.util.Revision;
@@ -60,11 +63,14 @@ import de.w4.analyzer.util.TFIDFWord;
  *
  */
 public class WikiAnalyzer {
-
+	
+	public static final String NO_USER_LOCATION_FOUND = "NA";
 	// singleton
 	private static WikiAnalyzer singleton;
 
 	private IPLocExtractor ipExtractor;
+	
+	private Jedis jedis;
 
 	public static synchronized WikiAnalyzer getWikiAnalyzer()
 			throws IOException {
@@ -77,6 +83,8 @@ public class WikiAnalyzer {
 	// constructor
 	private WikiAnalyzer() throws IOException {
 		this.ipExtractor = new IPLocExtractor();
+		
+		this.jedis = new Jedis(WikiController.REDIS_HOST, WikiController.REDIS_PORT);
 	}
 
 	/**
@@ -497,7 +505,14 @@ public class WikiAnalyzer {
 			}
 		} else {
 			// no location
-			rev.setGeo(new GeoObject(0.0, 0.0, ""));
+			String user_name = jedis.hget(WikiController.REDIS_NATION_HASH_NAME,rev.getUser_name());
+			if(user_name != null) {
+				rev.setGeo(new GeoObject(0.0, 0.0, user_name));
+			}else {
+				//nothing found
+				rev.setGeo(new GeoObject(0.0, 0.0, NO_USER_LOCATION_FOUND));
+			}
+			
 		}
 
 		return rev;

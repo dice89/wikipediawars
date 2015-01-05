@@ -1,11 +1,13 @@
 package de.w4.analyzer.ipgeoloc;
 
-import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.URISyntaxException;
 
 import org.apache.http.client.ClientProtocolException;
+
+import play.Play;
 
 import com.maxmind.geoip2.DatabaseReader;
 import com.maxmind.geoip2.exception.GeoIp2Exception;
@@ -26,17 +28,17 @@ public class IPLocExtractor {
 
 	private DatabaseReader reader;
 	// probably move to s3
-	private static final String GEO_DB_LOC = "GeoLite2-City.mmdb";
+	private static final String GEO_DB_LOC = "public/data/GeoLite2-City.mmdb";
 
 	public IPLocExtractor() throws IOException {
 		super();
-		File database = new File(GEO_DB_LOC);
-		reader = new DatabaseReader.Builder(database).build();
+		InputStream stream = Play.application().classloader().getResourceAsStream(GEO_DB_LOC);
+		reader = new DatabaseReader.Builder(stream).build();
 	}
 
 	/**
 	 * 
-	 * Returns a geo location for a given IP addres, or simply an host name
+	 * Returns a geo location for a given IP address, or simply an host name
 	 * 
 	 * @param ip
 	 * @return
@@ -52,6 +54,8 @@ public class IPLocExtractor {
 		CityResponse response = reader.city(ipAddress);
 
 		String country_code = response.getCountry().getIsoCode();
+		
+	
 		GeoObject geobj = new GeoObject(response.getLocation().getLatitude(),
 				response.getLocation().getLongitude(), country_code);
 

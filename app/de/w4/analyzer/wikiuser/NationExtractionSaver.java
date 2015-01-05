@@ -26,7 +26,8 @@ public class NationExtractionSaver extends UntypedActor {
 						if (nation.isPresent()) {
 							// Jedis add received_nations_real
 							Logger.debug("Saved: " +name +"---" +nation.get());
-							jedis.hset("USER_NATION_HASH", name, nation.get());
+					
+							jedis.hset(WikiController.REDIS_NATION_HASH_NAME, name, nation.get());
 						}
 					});
 			

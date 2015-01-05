@@ -4,12 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import play.Logger;
-import redis.clients.jedis.Jedis;
 import akka.actor.ActorRef;
 import akka.actor.Props;
 import akka.actor.UntypedActor;
 import akka.routing.RoundRobinPool;
-import controllers.WikiController;
 import de.w4.analyzer.wikiuser.messages.ExtractionStart;
 import de.w4.analyzer.wikiuser.messages.ExtractionTask;
 import de.w4.analyzer.wikiuser.messages.ExtractionTaskDone;
