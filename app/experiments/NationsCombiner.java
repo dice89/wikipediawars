@@ -20,6 +20,7 @@ public class NationsCombiner {
 			String[] elements = line.split(";");
 			if (elements.length > 1) {
 				final_data.put(elements[0], elements[1]);
+				//System.out.println(elements[0]);
 			}
 		});
 		
@@ -37,13 +38,18 @@ public class NationsCombiner {
 		List<String> final_file = new ArrayList<String>();
 		
 		final_data.forEach((key,value) -> {
+		
 			final_file.add(key+";"+value);
 		});
 		
 		File combined_file = new File("public/data/combined_iso.txt");
 		combined_file.createNewFile();
 
-		Files.write(combined_file.toPath(), final_file, Charset.forName("UTF-16"), StandardOpenOption.TRUNCATE_EXISTING);
+		Files.write(combined_file.toPath(), final_file, Charset.forName("UTF-8"), StandardOpenOption.TRUNCATE_EXISTING);
+		
+
+				
+		
 	
 	}
 

@@ -1,6 +1,31 @@
+import com.typesafe.sbt.SbtNativePackager._
+import NativePackagerKeys._
+
+packageArchetype.java_server
+
 name := """World Wide Wikipedia Wars"""
 
-version := "1.0-SNAPSHOT"
+version := "1.0"
+
+packageDescription in Rpm := "My package Description"
+
+rpmVendor in Rpm := "Alexander Mueller"
+
+packageSummary in Rpm:= "test"
+
+packageDescription := "A web application to monitor kafka web console"
+
+rpmGroup := Some("Test")
+
+rpmRelease := "1"
+
+rpmVendor := "Gopal Patwa"
+
+rpmUrl := Some("http://github.com/muuki88/sbt-native-packager")
+
+rpmLicense := Some("Apache v2")
+
+
 
 lazy val root = (project in file(".")).enablePlugins(PlayJava)
 
@@ -25,3 +50,4 @@ libraryDependencies ++= Seq(
 resolvers ++= Seq(
   "pk11 repo" at "http://pk11-scratch.googlecode.com/svn/trunk"
 )
+

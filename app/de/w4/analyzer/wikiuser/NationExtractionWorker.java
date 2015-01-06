@@ -3,6 +3,7 @@ package de.w4.analyzer.wikiuser;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -117,7 +118,7 @@ public class NationExtractionWorker extends UntypedActor {
 					Elements contentLinks = doc.getElementById("bodyContent")
 							.getElementsByTag("a");
 
-					//String s = "";
+					String s = "";
 					List<String> candidates = new ArrayList<>();
 
 					for (Element e : contentLinks) {
@@ -128,8 +129,10 @@ public class NationExtractionWorker extends UntypedActor {
 						if (parts[parts.length - 1].contains("#"))
 							continue;
 
-						//s += parts[parts.length - 1];
-						// Logger.debug(s);
+						s += parts[parts.length - 1];
+						 //Logger.debug(s);
+						
+					
 						candidates.add(parts[parts.length - 1].trim());
 					}
 
@@ -140,6 +143,7 @@ public class NationExtractionWorker extends UntypedActor {
 							.findFirst();
 					
 					if (nation.isPresent()){
+						Logger.debug(nation.get());
 						nation = Optional.of(nation_map.get(nation.get()));
 					}
 					
@@ -152,17 +156,20 @@ public class NationExtractionWorker extends UntypedActor {
 		try {
 			
 			InputStream stream = Play.application().classloader().getResourceAsStream("public/data/combined_iso.txt");
-			BufferedReader br = new BufferedReader(new InputStreamReader( stream));
+			BufferedReader br = new BufferedReader(new InputStreamReader( stream,Charset.forName("UTF-8")));
 			Map<String,String> nations = new HashMap<String,String>();
 			
 			String theLine = null;
 			while((theLine = br.readLine())!= null){
+				
 				String[] elements = theLine.split(";");
-				if (elements.length > 0 ){
+				if (elements.length > 1 ){
 					nations.put(elements[0], elements[1]);
 				}
 
 			}
+			
+			Logger.debug("Size : " + nations.size());
 			return nations;
 			
 		} catch (Exception e){

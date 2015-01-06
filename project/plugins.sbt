@@ -3,6 +3,8 @@ resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/release
 // The Play plugin
 addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.3.6")
 
+addSbtPlugin("com.typesafe.sbt" % "sbt-native-packager" % "0.8.0-M2")
+
 // web plugins
 
 addSbtPlugin("com.typesafe.sbt" % "sbt-coffeescript" % "1.0.0")
