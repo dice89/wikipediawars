@@ -455,6 +455,7 @@ public class WikiController extends Controller {
 		}
 
 		holder = holder.setHeader("User-Agent", "Wikpedia Wars Application");
+		
 
 		// crazy functional shit to chain ws promises after each other and
 		// finally create a new promise based on the results of the others
