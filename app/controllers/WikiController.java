@@ -405,8 +405,7 @@ public class WikiController extends Controller {
 								.promise(() -> new CombinedJSONResponse(null));
 						return response_promise;
 					} else {
-						System.out.println(json_response
-								.findPath("query-continue"));
+						
 						Optional<String> continue_value = Optional
 								.ofNullable(json_response
 										.findPath("query-continue")
@@ -414,8 +413,7 @@ public class WikiController extends Controller {
 										.findPath(continue_field).asText()
 										.toString().replace(" ", "_"));
 
-						System.out.println("Continue with"
-								+ continue_value.orElse("nix da"));
+				
 						return extractWikiUsers(continue_value, continue_field, holder);
 					}
 
