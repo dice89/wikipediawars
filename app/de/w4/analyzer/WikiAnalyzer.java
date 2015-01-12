@@ -508,9 +508,10 @@ public class WikiAnalyzer {
 
 		} else {
 			// no location
-			String user_name = jedis.hget(WikiController.REDIS_NATION_HASH_NAME,rev.getUser_name());
-			if(user_name != null) {
-				rev.setGeo(new GeoObject(0.0, 0.0, user_name));
+			String user_nation = jedis.hget(WikiController.REDIS_NATION_HASH_NAME,rev.getUser_name());
+			if(user_nation != null) {
+				Logger.debug("found nation for " + rev.getUser_name() + " : " + user_nation);
+				rev.setGeo(new GeoObject(0.0, 0.0, user_nation));
 			}else {
 				//nothing found
 				rev.setGeo(new GeoObject(0.0, 0.0, NO_USER_LOCATION_FOUND));
