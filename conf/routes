@@ -10,7 +10,8 @@ GET        /revisions/suggest                   controllers.WikiController.sugge
 GET        /usergeo/:user                       controllers.WikiController.geoForRegisteredUsers(user: String)
 POST       /users/extract						controllers.WikiController.extractWikiUsers()
 POST       /users/nations/extract				controllers.WikiController.extractUserNation()
-GET			/test								controllers.WikiController.testFile()
+GET			/createchart						controllers.WikiController.createChart()
+GET			/createbarchart						controllers.WikiController.createBarChart()
 # Map static resources from the /public folder to the /assets URL path
 GET        /assets/*file                        controllers.Assets.at(path="/public", file)
 GET        /*file                               controllers.Assets.at(path="/public", file)

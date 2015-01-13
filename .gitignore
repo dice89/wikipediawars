@@ -16,3 +16,5 @@ dist
 dump.rdb
 
 dump.rdb
+
+*.png

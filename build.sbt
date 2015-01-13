@@ -44,7 +44,9 @@ libraryDependencies ++= Seq(
   "org.jsoup" % "jsoup" % "1.8.1",
   "org.apache.lucene" % "lucene-core" % "4.10.1",
   "org.apache.lucene" % "lucene-analyzers-common" % "4.10.1",
-  "redis.clients" % "jedis" % "2.6.0"
+  "redis.clients" % "jedis" % "2.6.0",
+   "org.postgresql" % "postgresql" % "9.3-1102-jdbc4",
+   "org.jfree" % "jfreechart" % "1.0.19"
 )
 
 resolvers ++= Seq(
