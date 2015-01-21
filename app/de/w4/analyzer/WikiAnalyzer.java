@@ -37,9 +37,13 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import play.Logger;
+import redis.clients.jedis.Jedis;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.maxmind.geoip2.exception.GeoIp2Exception;
 
+import controllers.WikiController;
 import de.w4.analyzer.ipgeoloc.GeoObject;
 import de.w4.analyzer.ipgeoloc.IPLocExtractor;
 import de.w4.analyzer.util.Revision;
@@ -60,11 +64,14 @@ import de.w4.analyzer.util.TFIDFWord;
  *
  */
 public class WikiAnalyzer {
-
+	
+	public static final String NO_USER_LOCATION_FOUND = "NK";
 	// singleton
 	private static WikiAnalyzer singleton;
 
 	private IPLocExtractor ipExtractor;
+	
+	private Jedis jedis;
 
 	public static synchronized WikiAnalyzer getWikiAnalyzer()
 			throws IOException {
@@ -77,6 +84,8 @@ public class WikiAnalyzer {
 	// constructor
 	private WikiAnalyzer() throws IOException {
 		this.ipExtractor = new IPLocExtractor();
+		
+		this.jedis = new Jedis(WikiController.REDIS_HOST, WikiController.REDIS_PORT);
 	}
 
 	/**
@@ -376,7 +385,6 @@ public class WikiAnalyzer {
 				}
 
 				// handle revisions deleted and inserted terms
-				// TODO extract into another method
 				int rev_id = Integer.parseInt(reader.document(docID)
 						.getField("internal_id").stringValue().trim());
 
@@ -407,6 +415,7 @@ public class WikiAnalyzer {
 
 		RevisionList rev_list = new RevisionList();
 		for (JsonNode revisions : revision_arrays) {
+
 			JsonNode revision = null;
 			Revision revision_obj = null;
 
@@ -418,11 +427,10 @@ public class WikiAnalyzer {
 					revision_obj = parseJSONSingleRevision(revision);
 
 					// set edited size
-
+			
 					rev_list.add(revision_obj);
 				} catch (Exception e) {
-
-					System.out.println("sick_entry" + revision.toString());
+					Logger.error("sick_entry" + revision.toString());
 				}
 
 			}
@@ -474,7 +482,9 @@ public class WikiAnalyzer {
 
 		int rev_id = revision.findValue("revid").asInt();
 		String user_id = revision.findValue("userid").asInt() + "";
+
 		String timestamp = revision.findValue("timestamp").asText();
+		
 		String diffhtml = "";
 		try {
 			diffhtml = revision.findPath("diff").findValue("*").asText()
@@ -493,11 +503,19 @@ public class WikiAnalyzer {
 				// retrieve Geo Location
 				rev.setGeo(ipExtractor.getGeoLocationForIP(rev.getUser_name()));
 			} catch (URISyntaxException | IOException e) {
-				rev.setGeo(new GeoObject(0.0, 0.0, ""));
+				rev.setGeo(new GeoObject(0.0, 0.0, NO_USER_LOCATION_FOUND));
 			}
+
 		} else {
 			// no location
-			rev.setGeo(new GeoObject(0.0, 0.0, ""));
+			String user_name = jedis.hget(WikiController.REDIS_NATION_HASH_NAME,rev.getUser_name());
+			if(user_name != null) {
+				rev.setGeo(new GeoObject(0.0, 0.0, user_name));
+			}else {
+				//nothing found
+				rev.setGeo(new GeoObject(0.0, 0.0, NO_USER_LOCATION_FOUND));
+			}
+			
 		}
 
 		return rev;
@@ -538,6 +556,7 @@ public class WikiAnalyzer {
 			// DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
 			Date result = df.parse(date);
 
+			
 			RevisionSummaryObjectGroup sog = new RevisionSummaryObjectGroup(result);
 
 			for (String code : map.keySet()) {

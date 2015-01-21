@@ -6,6 +6,7 @@ package de.w4.analyzer.util;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.TimeZone;
 
 /**
  * @author Michael Dell and Alexander C. Mueller
@@ -52,19 +53,22 @@ public class RevisionList extends ArrayList<Revision> {
 	 */
 	private String getAggregationKey(Revision rev, int aggregation_type){
 		
-		Calendar c = Calendar.getInstance();
+		Calendar c = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
+		
 		c.setTime(rev.getDate());
 		
 		String return_key ="";
+		
+		// month + 1 because for some weird reasons for month the index starts at 0
 		switch (aggregation_type) {
 		case AGGREGATE_MONTH:
-			return_key = c.get(Calendar.YEAR) +"-" + c.get(Calendar.MONTH);
+			return_key = c.get(Calendar.YEAR) +"-" + (c.get(Calendar.MONTH)+1);
 			break;
 		case AGGREGATE_WEEK:
 			return_key =c.get(Calendar.YEAR) +"-"+ c.get(Calendar.WEEK_OF_YEAR);
 			break;
 		case AGGREGATE_DAY:
-			return_key = c.get(Calendar.YEAR) +"-" + c.get(Calendar.MONTH) +"-"+c.get(Calendar.DAY_OF_MONTH);
+			return_key = c.get(Calendar.YEAR) +"-" + (c.get(Calendar.MONTH)+1)  +"-"+c.get(Calendar.DAY_OF_MONTH);
 			break;
 		}
 		
