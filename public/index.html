@@ -128,9 +128,16 @@
     </div>
     <!-- <script type="text/javascript" src="data/camDataJSON.js"></script> -->
     <!-- <script type="text/javascript" src="data/crimeDataJSON.js"></script> -->
-    
+
     <!-- <script src="scripts/leaflet/leaflet.js"></script> -->
-    <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=visualization"></script>
+    <!-- <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=visualization"></script> -->
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    <script type="text/javascript">
+    // Load Google APIs (can't be done in anonym function)
+    google.load('visualization', '1', {
+        'packages': ['geochart']
+    });
+    </script>
     <script type="text/javascript" src="scripts/main.js"></script>
 </body>
 

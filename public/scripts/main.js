@@ -13,7 +13,8 @@
         infoWindows = [],
         oCounter, cnt = 0,
         oSearchField, url, oWikiSearchData, oAutocompleteList, aListEnries, oGoBtn,
-        iSelectedSuggest = -1;
+        iSelectedSuggest = -1,
+        geochart;
 
     // Bootstrap
     window.addEventListener('DOMContentLoaded', function(e) {
@@ -130,130 +131,159 @@
         oContent.style.height = window.innerHeight + 'px';
         oContent.height = window.innerHeight + 'px';
 
+        // GOOGLE MAP CHARTS API
+        google.setOnLoadCallback(function() {
+            var data = google.visualization.arrayToDataTable([
+                ['Country', 'Edits'],
+                ['Germany', 200],
+                ['United States', 300],
+                ['Brazil', 400],
+                ['Canada', 500],
+                ['France', 600],
+                ['RU', 700]
+            ]);
+
+            var options = {
+                // region: 'IT',
+                // region: '155', // Western Europe
+                // displayMode: 'markers',
+                colorAxis: {
+                    colors: ['red'],
+                    minValue: 0
+                },
+                // backgroundColor: '#81d4fa',
+                // datalessRegionColor: '#f8bbd0'
+            };
+            geochart = new google.visualization.GeoChart(document.getElementById('map'));
+            geochart.draw(data, options);
+        });
+
+        // GOOGLE MAPS API
         // Map Style made with http://gmaps-samples-v3.googlecode.com/svn/trunk/styledmaps/wizard/index.html
-        var mapStyle = [{
-            "featureType": "water",
-            "elementType": "labels",
-            "stylers": [{
-                "visibility": "off"
-            }]
-        }, {
-            "featureType": "transit",
-            "stylers": [{
-                "visibility": "off"
-            }]
-        }, {
-            "featureType": "road",
-            "stylers": [{
-                "visibility": "off"
-            }]
-        }, {
-            "featureType": "poi",
-            "stylers": [{
-                "visibility": "off"
-            }]
-        }, {
-            "featureType": "landscape",
-            "stylers": [{
-                "visibility": "simplified"
-            }, {
-                "color": "#ffffff"
-            }]
-        }, {
-            "featureType": "administrative.land_parcel",
-            "stylers": [{
-                "visibility": "off"
-            }]
-        }, {
-            "featureType": "administrative.neighborhood",
-            "stylers": [{
-                "visibility": "off"
-            }]
-        }, {
-            "featureType": "administrative.province",
-            "stylers": [{
-                "visibility": "off"
-            }]
-        }, {
-            "featureType": "administrative.locality",
-            "elementType": "labels",
-            "stylers": [{
-                "visibility": "off"
-            }]
-        }, {
-            "featureType": "administrative.country",
-            "elementType": "geometry",
-            "stylers": [{
-                "color": "#cccccc"
-            }]
-        }, {
-            "featureType": "administrative.country",
-            "elementType": "labels.text.fill",
-            "stylers": [{
-                "color": "#555555"
-            }]
-        }];
+        // var mapStyle = [{
+        //     "featureType": "water",
+        //     "elementType": "labels",
+        //     "stylers": [{
+        //         "visibility": "off"
+        //     }]
+        // }, {
+        //     "featureType": "transit",
+        //     "stylers": [{
+        //         "visibility": "off"
+        //     }]
+        // }, {
+        //     "featureType": "road",
+        //     "stylers": [{
+        //         "visibility": "off"
+        //     }]
+        // }, {
+        //     "featureType": "poi",
+        //     "stylers": [{
+        //         "visibility": "off"
+        //     }]
+        // }, {
+        //     "featureType": "landscape",
+        //     "stylers": [{
+        //         "visibility": "simplified"
+        //     }, {
+        //         "color": "#ffffff"
+        //     }]
+        // }, {
+        //     "featureType": "administrative.land_parcel",
+        //     "stylers": [{
+        //         "visibility": "off"
+        //     }]
+        // }, {
+        //     "featureType": "administrative.neighborhood",
+        //     "stylers": [{
+        //         "visibility": "off"
+        //     }]
+        // }, {
+        //     "featureType": "administrative.province",
+        //     "stylers": [{
+        //         "visibility": "off"
+        //     }]
+        // }, {
+        //     "featureType": "administrative.locality",
+        //     "elementType": "labels",
+        //     "stylers": [{
+        //         "visibility": "off"
+        //     }]
+        // }, {
+        //     "featureType": "administrative.country",
+        //     "elementType": "geometry",
+        //     "stylers": [{
+        //         "color": "#cccccc"
+        //     }]
+        // }, {
+        //     "featureType": "administrative.country",
+        //     "elementType": "labels.text.fill",
+        //     "stylers": [{
+        //         "color": "#555555"
+        //     }]
+        // }];
 
-        // Create a new StyledMapType object
-        var styledMap = new google.maps.StyledMapType(mapStyle, {
-            name: "WikiWars Map"
-        });
+        // // Create a new StyledMapType object
+        // var styledMap = new google.maps.StyledMapType(mapStyle, {
+        //     name: "WikiWars Map"
+        // });
 
-        var berlin = new google.maps.LatLng(52.31, 13.42);
+        // var berlin = new google.maps.LatLng(52.31, 13.42);
 
-        var map = new google.maps.Map(document.getElementById('map'), {
-            center: berlin,
-            zoom: 3,
-            mapTypeControlOptions: {
-                mapTypeIds: [google.maps.MapTypeId.ROADMAP, 'map_style']
-            },
-            mapTypeControl: false,
-            streetViewControl: false
-        });
+        // var map = new google.maps.Map(document.getElementById('map'), {
+        //     center: berlin,
+        //     zoom: 3,
+        //     mapTypeControlOptions: {
+        //         mapTypeIds: [google.maps.MapTypeId.ROADMAP, 'map_style']
+        //     },
+        //     mapTypeControl: false,
+        //     streetViewControl: false
+        // });
 
-        map.mapTypes.set('map_style', styledMap);
-        map.setMapTypeId('map_style');
+        // map.mapTypes.set('map_style', styledMap);
+        // map.setMapTypeId('map_style');
 
-        var world_geometry = new google.maps.FusionTablesLayer({
-            query: {
-                select: 'geometry',
-                from: '1N2LBk4JHwWpOY4d9fobIn27lfnZ5MDy-NoqqRpk'
-            },
-            styles: [{
-                markerOptions: {
-                    iconName: "large_green"
-                },
-                polygonOptions: {
-                    fillColor: '#ffffff',
-                    strokeColor: "#ffffff",
-                    strokeWeight: 0,
-                    fillOpacity: 0
-                },
-                polylineOptions: {
-                    strokeColor: "#ffffff",
-                    strokeWeight: 0
-                }
-            }, {
-                where: "ISO_2DIGIT IN ('FR', 'VA', 'RU')",
-                polygonOptions: {
-                    fillColor: '#ff0000',
-                    strokeColor: "#ff0000",
-                    strokeWeight: 0.5,
-                    fillOpacity: 0.9
-                }
-            }, {
-                where: "ISO_2DIGIT IN ('US', 'GB', 'DE')",
-                polygonOptions: {
-                    fillColor: '#ff3300',
-                    strokeColor: "#ff3300",
-                    strokeWeight: 0.5,
-                    fillOpacity: 0.5
-                }
-            }],
-            map: map,
-            suppressInfoWindows: true
-        });
+        // var world_geometry = new google.maps.FusionTablesLayer({
+        //     query: {
+        //         select: 'geometry',
+        //         from: '1N2LBk4JHwWpOY4d9fobIn27lfnZ5MDy-NoqqRpk'
+        //     },
+        //     styles: [{
+        //         markerOptions: {
+        //             iconName: "large_green"
+        //         },
+        //         polygonOptions: {
+        //             fillColor: '#ffffff',
+        //             strokeColor: "#ffffff",
+        //             strokeWeight: 0,
+        //             fillOpacity: 0
+        //         },
+        //         polylineOptions: {
+        //             strokeColor: "#ffffff",
+        //             strokeWeight: 0
+        //         }
+        //     }, {
+        //         where: "ISO_2DIGIT IN ('FR', 'VA', 'RU')",
+        //         polygonOptions: {
+        //             fillColor: '#ff0000',
+        //             strokeColor: "#ff0000",
+        //             strokeWeight: 0.5,
+        //             fillOpacity: 0.9
+        //         }
+        //     }, {
+        //         where: "ISO_2DIGIT IN ('US', 'GB', 'DE')",
+        //         polygonOptions: {
+        //             fillColor: '#ff3300',
+        //             strokeColor: "#ff3300",
+        //             strokeWeight: 0.5,
+        //             fillOpacity: 0.5
+        //         }
+        //     }],
+        //     map: map,
+        //     suppressInfoWindows: true
+        // });
 
+        // LEAFLET API
         // var map = L.map('map').setView([52.31, 13.42], 3); // Berlin as start point
         // L.tileLayer('https://{s}.tiles.mapbox.com/v3/{id}/{z}/{x}/{y}.png', {
         //     maxZoom: 18,
@@ -495,6 +525,43 @@
     }
 
     function toggle(reveal) {
+
+        console.log(oSearchField.value);
+
+        var timescope = "6m";
+        var aggregation = "m";
+
+        // Execute Query
+        var r = new XMLHttpRequest();
+        // ToDo handle non-URL characters in article
+        r.open("GET", "/revisions/analyse/"+oSearchField.value+
+                        "?timescope="+timescope+
+                        "&aggregation="+aggregation, true);
+        r.responseType = "json";
+        r.onreadystatechange = function() {
+            if (r.readyState != 4 || r.status != 200) return;
+            console.log(r.status);
+            var countries = new Array();
+
+            console.log(r.response.revisions);
+
+            if (r.response.revisions) {
+                countries.push(['Country', 'Edits']);
+                for (var j = 0; j < r.response.revisions[0].summary.length; j++) {
+                    if (r.response.revisions[0].summary[j].country != "") {
+                        countries.push([
+                            r.response.revisions[0].summary[j].country,
+                            r.response.revisions[0].summary[j].editSize
+                            ]);
+                    }
+                }
+                console.log(countries);
+                var geodata = google.visualization.arrayToDataTable(countries);
+                geochart.draw(geodata);
+            }
+        }
+        r.send();
+
         isSkipperAnimating = true;
 
         if (reveal) {
