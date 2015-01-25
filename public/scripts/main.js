@@ -133,29 +133,29 @@
 
         // GOOGLE MAP CHARTS API
         google.setOnLoadCallback(function() {
-            var data = google.visualization.arrayToDataTable([
-                ['Country', 'Edits'],
-                ['Germany', 200],
-                ['United States', 300],
-                ['Brazil', 400],
-                ['Canada', 500],
-                ['France', 600],
-                ['RU', 700]
-            ]);
+        //     var data = google.visualization.arrayToDataTable([
+        //         ['Country', 'Edits'],
+        //         ['Germany', 200],
+        //         ['United States', 300],
+        //         ['Brazil', 400],
+        //         ['Canada', 500],
+        //         ['France', 600],
+        //         ['RU', 700]
+        //     ]);
 
-            var options = {
-                // region: 'IT',
-                // region: '155', // Western Europe
-                // displayMode: 'markers',
-                colorAxis: {
-                    colors: ['red'],
-                    minValue: 0
-                },
-                // backgroundColor: '#81d4fa',
-                // datalessRegionColor: '#f8bbd0'
-            };
+        //     var options = {
+        //         // region: 'IT',
+        //         // region: '155', // Western Europe
+        //         // displayMode: 'markers',
+        //         colorAxis: {
+        //             colors: ['red'],
+        //             minValue: 0
+        //         },
+        //         // backgroundColor: '#81d4fa',
+        //         // datalessRegionColor: '#f8bbd0'
+        //     };
             geochart = new google.visualization.GeoChart(document.getElementById('map'));
-            geochart.draw(data, options);
+        //     geochart.draw(data, options);
         });
 
         // GOOGLE MAPS API
