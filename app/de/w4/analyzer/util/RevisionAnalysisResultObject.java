@@ -14,6 +14,7 @@ public class RevisionAnalysisResultObject {
 	private int revisions_total;
 	private String newest_revision_time;
 	private long analysis_time;
+	private double fraction_not_known;
 	
 
 	List<TFIDFWord> most_specfic_terms;
@@ -27,18 +28,37 @@ public class RevisionAnalysisResultObject {
 		super();
 	}
 
+	
+
 	public RevisionAnalysisResultObject(int last_revision_id,
 			int revisions_total, String newest_revision_time,
-			long analysis_time, List<TFIDFWord> most_specfic_terms,
+			long analysis_time, double fraction_not_known,
+			List<TFIDFWord> most_specfic_terms,
 			List<RevisionSummaryObjectGroup> revisions) {
 		super();
 		this.last_revision_id = last_revision_id;
 		this.revisions_total = revisions_total;
 		this.newest_revision_time = newest_revision_time;
 		this.analysis_time = analysis_time;
+		this.fraction_not_known = fraction_not_known;
 		this.most_specfic_terms = most_specfic_terms;
 		this.revisions = revisions;
 	}
+
+	
+
+
+	public double getFraction_not_known() {
+		return fraction_not_known;
+	}
+
+
+
+	public void setFraction_not_known(double fraction_not_known) {
+		this.fraction_not_known = fraction_not_known;
+	}
+
+
 
 	public List<TFIDFWord> getMost_specfic_terms() {
 		return most_specfic_terms;

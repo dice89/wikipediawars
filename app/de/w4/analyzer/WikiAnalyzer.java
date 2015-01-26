@@ -113,10 +113,29 @@ public class WikiAnalyzer {
 		long endtime = System.currentTimeMillis();
 		long analysistime = (endtime - startime);
 
+		//get not known count
+		int size_n_k = 0;
+		
+		for (Revision rev : rev_list) {
+			try{
+				if(rev.getGeo().getCountryCode().equals(NO_USER_LOCATION_FOUND)){
+					size_n_k++;
+				}	
+			}catch(Exception e){
+				System.out.println(rev.toString());
+	
+			}
+			
+		}
+	
+	//	long size_not_known = rev_list.stream().filter(rev -> rev.getGeo().getCountryCode().equals(NO_USER_LOCATION_FOUND)).count();
+		
+		double fraction = ((double)size_n_k ) / ((double)rev_list.size());
+		
 		// create result object
 		return new RevisionAnalysisResultObject(rev_list.get(
 				rev_list.size() - 1).getRev_id(), rev_list.size(), rev_list
-				.get(rev_list.size() - 1).getTime_stamp(), analysistime, words,
+				.get(rev_list.size() - 1).getTime_stamp(), analysistime, fraction,words,
 				grouped);
 
 	}
@@ -496,13 +515,21 @@ public class WikiAnalyzer {
 
 		Revision rev = new Revision(user, user_id, timestamp, size, diffhtml,
 				rev_id);
-
+		rev.setGeo(new GeoObject(0.0, 0.0, NO_USER_LOCATION_FOUND));
 		// verify if is IP
 		if (rev.userIsIP()) {
 			try {
+				GeoObject geo_loc = ipExtractor.getGeoLocationForIP(rev.getUser_name());
+				
+				if(geo_loc.getCountryCode()!=null){
+					Logger.debug("found nation for " + rev.getUser_name() + " : " + geo_loc.getCountryCode());
+					rev.setGeo(geo_loc);
+				}
 				// retrieve Geo Location
-				rev.setGeo(ipExtractor.getGeoLocationForIP(rev.getUser_name()));
+			
+				
 			} catch (URISyntaxException | IOException e) {
+		
 				rev.setGeo(new GeoObject(0.0, 0.0, NO_USER_LOCATION_FOUND));
 			}
 

@@ -105,56 +105,6 @@ public class WikiController extends Controller {
 		
 	}
 
-	public static Promise<Result> guessAnalyzeTime(final String article,
-			final String time_scope) {
-
-		String end_date_utc_string = getUTCDateStringForScope(time_scope);
-
-		final Promise<Result> resultPromise = chainGetRevisionsGeoWS(null,
-				article, new ArrayList<WSResponse>(), end_date_utc_string, true)
-				.map(new Function<CombinedResponses, Result>() {
-
-					@Override
-					public Result apply(CombinedResponses responses)
-							throws Throwable {
-						JsonNode jsonbody = null;
-						int number = 0;
-						for (WSResponse response : responses.getResponses()) {
-
-							try {
-								jsonbody = response.asJson();
-								// System.out.println(jsonbody.toString());
-							} catch (Exception e) {
-								ok(response.toString());
-							}
-
-							// prevent json error
-							try {
-								// navigate through tree and get first page
-								// discard
-								// the other ones
-								number = number
-										+ jsonbody.findPath("pages").elements()
-												.next().findPath("revisions")
-												.size();
-
-							} catch (Exception e) {
-								System.out.println(number);
-								internalServerError(e.getMessage());
-							}
-
-							// now turn this to the revisions_analyzer
-						}
-
-						ok(Json.toJson("{count: " + number + "}"));
-						return null;
-					}
-				});
-
-		return resultPromise;
-
-	}
-
 	/**
 	 * Wrapper service for Wikipedia Autosuggest
 	 * 
@@ -215,63 +165,53 @@ public class WikiController extends Controller {
 
 			return promiseOfResult;
 		}
-		final Promise<Result> resultPromise = chainGetRevisionsGeoWS(null,
-				article, new ArrayList<WSResponse>(), end_date_utc_string,
-				false).map(new Function<CombinedResponses, Result>() {
-			public Result apply(CombinedResponses responses) {
-				// now let the magic begin
-				JsonNode jsonbody = null;
-
-				List<JsonNode> revision_array = new ArrayList<JsonNode>();
-				for (WSResponse response : responses.getResponses()) {
-
-					try {
-						jsonbody = response.asJson();
-					} catch (Exception e) {
-						
-						Logger.error(e.getMessage());
-						
-						return returnEmptyResult();
-					}
-
-					try {
-
-						// navigate through tree and get first page
-						// discard
-						// the other ones
-						revision_array.add(jsonbody.findPath("pages")
-								.elements().next().findPath("revisions"));
-					} catch (Exception e) {
-						return internalServerError(e.getMessage());
-					}
-
-					// now turn this to the revisions_analyzer
-				}
-				Logger.debug("Data retrieved now analyse it!");
-
-				// first merge revisions arrays together to only have one
-				RevisionAnalysisResultObject revision_summary_object = null;
+		
+		
+		
+		
+		return chainGetRevisionsGeoWS(Optional.empty(), article, new ArrayList<JsonNode>(),end_date_utc_string,false).map(combinedResponses->{
+			// now let the magic begin
+			CombinedJSONResponse responses = null;
+			if(combinedResponses instanceof CombinedJSONResponse){
+				responses = (CombinedJSONResponse) combinedResponses;
+			}
+			List<JsonNode> revision_array = new ArrayList<JsonNode>();
+			for (JsonNode jsonbody : responses.getResponses()) {
 				try {
-					revision_summary_object = WikiAnalyzer.getWikiAnalyzer()
-							.analyzeGeoOrigin(revision_array,
-									TOP_K_DISCUSSED_TERMS, aggregation_type);
-				} catch (IOException | ParseException e) {
-					Logger.error("Analysis Failed");
+					// navigate through tree and get first page
+					// discard
+					// the other ones
+					revision_array.add(jsonbody.get("query").get("pages").findPath("revisions"));
+				} catch (Exception e) {
 					return internalServerError(e.getMessage());
 				}
 
-				if (revision_summary_object == null) {
-
-					return internalServerError("Wikipedia API Error");
-				}
-				JsonNode resp = Json.toJson(revision_summary_object);
-
-				Cache.set(cachekey, Json.stringify(resp), 60 * 24);
-				return ok(resp);
+				// now turn this to the revisions_analyzer
 			}
+			Logger.debug("Data retrieved now analyse it!");
+
+			// first merge revisions arrays together to only have one
+			RevisionAnalysisResultObject revision_summary_object = null;
+			try {
+				revision_summary_object = WikiAnalyzer.getWikiAnalyzer()
+						.analyzeGeoOrigin(revision_array,
+								TOP_K_DISCUSSED_TERMS, aggregation_type);
+			} catch (IOException | ParseException e) {
+				Logger.error("Analysis Failed");
+				return internalServerError(e.getMessage());
+			}
+
+			if (revision_summary_object == null) {
+
+				return internalServerError("Wikipedia API Error");
+			}
+			JsonNode resp = Json.toJson(revision_summary_object);
+
+			Cache.set(cachekey, Json.stringify(resp), 60 * 24);
+			return ok(resp);
+		
 		});
 
-		return resultPromise;
 	}
 	
 	
@@ -421,9 +361,9 @@ public class WikiController extends Controller {
 
 	}
 
-	private static Promise<CombinedResponses> chainGetRevisionsGeoWS(
-			final String continue_revision, final String article,
-			final List<WSResponse> responses, final String end_date_utc_string,
+	private static Promise<Object> chainGetRevisionsGeoWS(
+			final Optional<String> continue_revision, final String article,
+			final List<JsonNode> responses, final String end_date_utc_string,
 			final boolean count_request) {
 
 		// create parameters
@@ -445,11 +385,11 @@ public class WikiController extends Controller {
 			holder = holder.setQueryParameter("rvprop", "userid|timestamp")
 					.setQueryParameter("rvend", end_date_utc_string)
 					.setQueryParameter("rvlimit", "max");
-			;
 		}
 
-		if (continue_revision != null) {
-			holder = holder.setQueryParameter("rvcontinue", continue_revision);
+		
+		if (continue_revision.isPresent()) {
+			holder = holder.setQueryParameter("rvcontinue", continue_revision.get());
 		}
 
 		holder = holder.setHeader("User-Agent", "Wikpedia Wars Application");
@@ -457,40 +397,25 @@ public class WikiController extends Controller {
 
 		// crazy functional shit to chain ws promises after each other and
 		// finally create a new promise based on the results of the others
-		return holder.get().flatMap(
-				new Function<WSResponse, Promise<CombinedResponses>>() {
-
-					@Override
-					public Promise<CombinedResponses> apply(WSResponse response)
-							throws Throwable {
-						if (!response.asJson().has("query-continue")) {
-							// System.out.println(response.getBody());
-							// all revisions retrieved finally done
-							responses.add(response);
-							Promise<CombinedResponses> response_promise = Promise
-									.promise(new Function0<CombinedResponses>() {
-										public CombinedResponses apply() {
-											return new CombinedResponses(
-													responses);
-										}
-									});
-							return response_promise;
-
-						} else {
-
-							// more revisions to retrieve
-							String continue_value = response.asJson()
-									.findPath("query-continue")
-									.findPath("rvcontinue").toString();
-							System.out.println(continue_value);
-							responses.add(response);
-							return chainGetRevisionsGeoWS(continue_value,
-									article, responses, end_date_utc_string,
-									count_request);
-						}
-
-					}
-				});
+		return holder.get().flatMap(response ->{
+			JsonNode json_response = response.asJson();
+			responses.add(json_response);
+			if (!json_response.has("query-continue")) {
+				Promise<Object> response_promise = Promise
+						.promise(() -> new CombinedJSONResponse(responses));
+				return response_promise;
+			} else {
+				// more revisions to retrieve
+				Optional<String> continue_value = Optional
+						.ofNullable(json_response.findPath("query-continue")
+								.findPath("rvcontinue").toString());
+				Logger.debug("Continue Analysis with" + continue_value.get());
+				return chainGetRevisionsGeoWS(continue_value,
+						article, responses, end_date_utc_string,
+						count_request);
+				
+			}
+		});
 	}
 
 	/**

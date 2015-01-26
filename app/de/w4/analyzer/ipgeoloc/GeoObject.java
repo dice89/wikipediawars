@@ -32,4 +32,11 @@ public class GeoObject {
 		return countryCode;
 	}
 
+	@Override
+	public String toString() {
+		return "GeoObject [lati=" + lati + ", longi=" + longi
+				+ ", countryCode=" + countryCode + "]";
+	}
+	
+
 }

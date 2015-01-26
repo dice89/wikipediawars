@@ -181,6 +181,18 @@ public class Revision  implements Comparable<Revision> {
 	public Date getDate() {
 		return date;
 	}
+
+
+	@Override
+	public String toString() {
+		return "Revision [user_name=" + user_name + ", user_id=" + user_id
+				+ ", time_stamp=" + time_stamp + ", size=" + size + ", rev_id="
+				+ rev_id + ", wikitext=" + wikitext + ", html=" + html
+				+ ", plainText=" + plainText + ", comment=" + comment
+				+ ", geo=" + geo + ", diffhtml=" + diffhtml + ", date=" + date
+				+ ", editSize=" + editSize + ", insertedTerms=" + insertedTerms
+				+ ", deletedTerms=" + deletedTerms + "]";
+	}
 	
 	
 
