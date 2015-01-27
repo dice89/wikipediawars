@@ -7,12 +7,17 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Field;
@@ -38,6 +43,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import play.Logger;
+import play.libs.Json;
 import redis.clients.jedis.Jedis;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -64,13 +70,13 @@ import de.w4.analyzer.util.TFIDFWord;
  *
  */
 public class WikiAnalyzer {
-	
+
 	public static final String NO_USER_LOCATION_FOUND = "NK";
 	// singleton
 	private static WikiAnalyzer singleton;
 
 	private IPLocExtractor ipExtractor;
-	
+
 	private Jedis jedis;
 
 	public static synchronized WikiAnalyzer getWikiAnalyzer()
@@ -84,8 +90,9 @@ public class WikiAnalyzer {
 	// constructor
 	private WikiAnalyzer() throws IOException {
 		this.ipExtractor = new IPLocExtractor();
-		
-		this.jedis = new Jedis(WikiController.REDIS_HOST, WikiController.REDIS_PORT);
+
+		this.jedis = new Jedis(WikiController.REDIS_HOST,
+				WikiController.REDIS_PORT);
 	}
 
 	/**
@@ -113,30 +120,32 @@ public class WikiAnalyzer {
 		long endtime = System.currentTimeMillis();
 		long analysistime = (endtime - startime);
 
-		//get not known count
+		// get not known count
 		int size_n_k = 0;
-		
+
 		for (Revision rev : rev_list) {
-			try{
-				if(rev.getGeo().getCountryCode().equals(NO_USER_LOCATION_FOUND)){
+			try {
+				if (rev.getGeo().getCountryCode()
+						.equals(NO_USER_LOCATION_FOUND)) {
 					size_n_k++;
-				}	
-			}catch(Exception e){
+				}
+			} catch (Exception e) {
 				System.out.println(rev.toString());
-	
+
 			}
-			
+
 		}
-	
-	//	long size_not_known = rev_list.stream().filter(rev -> rev.getGeo().getCountryCode().equals(NO_USER_LOCATION_FOUND)).count();
-		
-		double fraction = ((double)size_n_k ) / ((double)rev_list.size());
-		
+
+		// long size_not_known = rev_list.stream().filter(rev ->
+		// rev.getGeo().getCountryCode().equals(NO_USER_LOCATION_FOUND)).count();
+
+		double fraction = ((double) size_n_k) / ((double) rev_list.size());
+
 		// create result object
 		return new RevisionAnalysisResultObject(rev_list.get(
 				rev_list.size() - 1).getRev_id(), rev_list.size(), rev_list
-				.get(rev_list.size() - 1).getTime_stamp(), analysistime, fraction,words,
-				grouped);
+				.get(rev_list.size() - 1).getTime_stamp(), analysistime,
+				fraction, words, grouped);
 
 	}
 
@@ -446,7 +455,7 @@ public class WikiAnalyzer {
 					revision_obj = parseJSONSingleRevision(revision);
 
 					// set edited size
-			
+
 					rev_list.add(revision_obj);
 				} catch (Exception e) {
 					Logger.error("sick_entry" + revision.toString());
@@ -503,7 +512,7 @@ public class WikiAnalyzer {
 		String user_id = revision.findValue("userid").asInt() + "";
 
 		String timestamp = revision.findValue("timestamp").asText();
-		
+
 		String diffhtml = "";
 		try {
 			diffhtml = revision.findPath("diff").findValue("*").asText()
@@ -519,31 +528,34 @@ public class WikiAnalyzer {
 		// verify if is IP
 		if (rev.userIsIP()) {
 			try {
-				GeoObject geo_loc = ipExtractor.getGeoLocationForIP(rev.getUser_name());
-				
-				if(geo_loc.getCountryCode()!=null){
-					Logger.debug("found nation for " + rev.getUser_name() + " : " + geo_loc.getCountryCode());
+				GeoObject geo_loc = ipExtractor.getGeoLocationForIP(rev
+						.getUser_name());
+
+				if (geo_loc.getCountryCode() != null) {
+					Logger.debug("found nation for " + rev.getUser_name()
+							+ " : " + geo_loc.getCountryCode());
 					rev.setGeo(geo_loc);
 				}
 				// retrieve Geo Location
-			
-				
+
 			} catch (URISyntaxException | IOException e) {
-		
+
 				rev.setGeo(new GeoObject(0.0, 0.0, NO_USER_LOCATION_FOUND));
 			}
 
 		} else {
 			// no location
-			String user_nation = jedis.hget(WikiController.REDIS_NATION_HASH_NAME,rev.getUser_name());
-			if(user_nation != null) {
-				Logger.debug("found nation for " + rev.getUser_name() + " : " + user_nation);
+			String user_nation = jedis.hget(
+					WikiController.REDIS_NATION_HASH_NAME, rev.getUser_name());
+			if (user_nation != null) {
+				Logger.debug("found nation for " + rev.getUser_name() + " : "
+						+ user_nation);
 				rev.setGeo(new GeoObject(0.0, 0.0, user_nation));
-			}else {
-				//nothing found
+			} else {
+				// nothing found
 				rev.setGeo(new GeoObject(0.0, 0.0, NO_USER_LOCATION_FOUND));
 			}
-			
+
 		}
 
 		return rev;
@@ -584,8 +596,8 @@ public class WikiAnalyzer {
 			// DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
 			Date result = df.parse(date);
 
-			
-			RevisionSummaryObjectGroup sog = new RevisionSummaryObjectGroup(result);
+			RevisionSummaryObjectGroup sog = new RevisionSummaryObjectGroup(
+					result);
 
 			for (String code : map.keySet()) {
 				ArrayList<Revision> reflist = map.get(code);
@@ -614,6 +626,88 @@ public class WikiAnalyzer {
 		Collections.sort(summaryObjectList);
 
 		return summaryObjectList;
+	}
+
+	public static JsonNode getTopPagesEditorAndCountries(List<JsonNode> revisions) {
+
+		Map<String, Integer> userToCount = new HashMap<String, Integer>();
+		Map<String, Integer> pageToCount = new HashMap<String, Integer>();
+
+		for (JsonNode revision : revisions.get(0).get("query")
+				.get("recentchanges")) {
+			String title = revision.get("title").asText();
+			String user = revision.get("user").asText();
+
+			int user_counter = 0;
+			if (userToCount.containsKey(user)) {
+				System.out.println("more than once");
+				user_counter = userToCount.get(user);
+			}
+			user_counter = user_counter+1;
+			userToCount.put(user, user_counter);
+
+			int page_counter = 0;
+			if (pageToCount.containsKey(title)) {
+				System.out.println("more than once");
+				page_counter = pageToCount.get(title);
+			}
+			
+			page_counter = page_counter+1;
+			pageToCount.put(title, page_counter);
+			// get country
+		}
+		
+		Map<String,Integer> sortedPageToCount =  sortByValue(pageToCount,-1);
+		
+	
+		Iterator it = sortedPageToCount.entrySet().iterator();
+		List<Entry<String,Integer>> topPages = new ArrayList<>();
+		int i = 0;
+		while(it.hasNext()){
+			Entry<String,Integer> pair = (Entry) it.next();
+			if(i < 10){
+				topPages.add(pair);
+			}else {
+				break;
+			}
+			i++;
+		}
+
+		System.out.println(topPages.get(0).getKey() +topPages.get(0).getValue() );
+		Map<String,Integer> sortedUserToCount =  sortByValue(userToCount,-1);
+		
+		it = sortedPageToCount.entrySet().iterator();
+		List<Entry<String,Integer>> topUsers = new ArrayList<>();
+		i = 0;
+		while(it.hasNext()){
+			Entry<String,Integer> pair = (Entry) it.next();
+			if(i < 10){
+				topUsers.add(pair);
+			}else {
+				break;
+			}
+			i++;
+		}
+		
+		System.out.println(topUsers.get(0).getKey() +topUsers.get(0).getValue() );
+		JsonNode test =  Json.toJson(topPages);
+		//TODO store top pages and top users in meaning full way per day and join both jsons to reply
+		System.out.println(test.toString());
+		
+		return Json.toJson(test);
+
+	}
+
+	private static <K, V extends Comparable<? super V>> Map<K, V> sortByValue(
+			Map<K, V> map, int multiplier) {
+		Map<K, V> result = new LinkedHashMap<>();
+		Stream<Map.Entry<K, V>> st = map.entrySet().stream();
+
+		st.sorted(
+				Comparator.comparing(e -> multiplier * (Integer) e.getValue()))
+				.forEach(e -> result.put(e.getKey(), e.getValue()));
+
+		return result;
 	}
 
 }

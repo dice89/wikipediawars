@@ -130,10 +130,6 @@ public class WikiController extends Controller {
 
 	}
 
-	/*
-	 * http://en.wikipedia.org/w/api.php?action=opensearch&format=json&search=Mann
-	 * &namespace=0&suggest=
-	 */
 
 	/**
 	 * Route for analyzing an Article
@@ -144,8 +140,8 @@ public class WikiController extends Controller {
 			final String time_scope, final String aggregation_string) {
 
 		// format timely scope
-
 		String end_date_utc_string = getUTCDateStringForScope(time_scope);
+		System.out.println(end_date_utc_string);
 		final int aggregation_type = getAggregationType(aggregation_string);
 
 		// check cache
@@ -214,6 +210,19 @@ public class WikiController extends Controller {
 
 	}
 	
+	
+	public static Promise<Result> startJobToGetMostEditedArticles(){
+		return chainGetRecentChanges(Optional.empty(), new ArrayList<JsonNode>(),null).map(combinedResponses->{
+			
+			CombinedJSONResponse responses = null;
+			if(combinedResponses instanceof CombinedJSONResponse){
+				responses = (CombinedJSONResponse) combinedResponses;
+			}
+			WikiAnalyzer.getTopPagesEditorAndCountries(responses.getResponses());
+	
+			return ok("test");
+		});
+	}
 	
 
 	private static String getCacheKey(final String article,
@@ -359,6 +368,52 @@ public class WikiController extends Controller {
 
 				});
 
+	}
+	
+	
+	private static Promise<Object> chainGetRecentChanges(
+			final Optional<String> continue_revision,
+			final List<JsonNode> responses, final String end_date_utc_string) {
+
+		// create parameters
+		//http://en.wikipedia.org/w/api.php?action=query&list=recentchanges&rcprop=title|sizes|flags|user&rclimit=max&rcend=2015-01-25T00:00:00Z
+		WSRequestHolder holder = WS.url("http://en.wikipedia.org/w/api.php");
+		holder = holder.setQueryParameter("format", "json")
+				.setQueryParameter("action", "query")
+				.setQueryParameter("list", "recentchanges")
+				.setQueryParameter("rcprop", "title|sizes|flags|user")
+				.setQueryParameter("rclimit", "max")
+				.setQueryParameter("rcshow", "!bot")
+				.setQueryParameter("rcend", "2015-01-27T21:00:00Z");
+
+		
+		if (continue_revision.isPresent()) {
+			holder = holder.setQueryParameter("rccontinue", continue_revision.get().replace("\"", ""));
+		}
+
+		holder = holder.setHeader("User-Agent", "Wikpedia Wars Application");
+		
+
+		// crazy functional shit to chain ws promises after each other and
+		// finally create a new promise based on the results of the others
+		return holder.get().flatMap(response ->{
+			JsonNode json_response = response.asJson();
+			responses.add(json_response);
+			System.out.println(json_response);
+			if (!json_response.has("query-continue")) {
+				Promise<Object> response_promise = Promise
+						.promise(() -> new CombinedJSONResponse(responses));
+				return response_promise;
+			} else {
+				// more revisions to retrieve
+				Optional<String> continue_value = Optional
+						.ofNullable(json_response.findPath("query-continue")
+								.findPath("rccontinue").toString());
+				Logger.debug("Continue Analysis with" + continue_value.get());
+				return chainGetRecentChanges(continue_value, responses, end_date_utc_string);
+				
+			}
+		});
 	}
 
 	private static Promise<Object> chainGetRevisionsGeoWS(
