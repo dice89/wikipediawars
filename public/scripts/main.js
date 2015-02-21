@@ -114,38 +114,15 @@
 
             // init top 5 column chart and draw initial data
             chartTop5 = new google.visualization.ColumnChart(document.getElementById('chart-top5'));
-            var data = new google.visualization.DataTable();
-            data.addColumn('timeofday', 'Time of Day');
-            data.addColumn('number', 'Motivation Level');
-            data.addRows([
-                [{v: [8, 0, 0], f: '8 am'}, 1],
-                [{v: [9, 0, 0], f: '9 am'}, 2],
-                [{v: [10, 0, 0], f:'10 am'}, 3],
-                [{v: [11, 0, 0], f: '11 am'}, 4],
-                [{v: [12, 0, 0], f: '12 pm'}, 5],
-                [{v: [13, 0, 0], f: '1 pm'}, 6],
-                [{v: [14, 0, 0], f: '2 pm'}, 7],
-                [{v: [15, 0, 0], f: '3 pm'}, 8],
-                [{v: [16, 0, 0], f: '4 pm'}, 9],
-                [{v: [17, 0, 0], f: '5 pm'}, 10],
-            ]);
+            var data = new google.visualization.arrayToDataTable([['Country', 'Edits'],['',0]]);
             chartTop5.draw(data);
 
             // init tag cloud and draw initial words
-            var data = new google.visualization.DataTable();
-            data.addColumn('string', 'Label');
-            data.addColumn('number', 'Value');
-            data.addColumn('string', 'Link');
-            data.addRows(3);
-            data.setValue(0, 0, 'First Term');
-            data.setValue(0, 1, 10);
-            data.setValue(1, 0, 'Second');
-            data.setValue(1, 1, 30);
-            data.setValue(1, 2, 'http://www.google.com');
-            data.setValue(2, 0, 'Third');
-            data.setValue(2, 1, 20);
+            var dataTags = new google.visualization.DataTable();
+            dataTags.addColumn('string', 'Label');
+            dataTags.addColumn('number', 'Value');
             chartTagCloud = new TermCloud(document.getElementById('tag-cloud'));
-            chartTagCloud.draw(data, null);
+            chartTagCloud.draw(dataTags, null);
             });
     }
 
@@ -280,38 +257,14 @@
 
             RESPONSE = r.response;
 
-            // UPDATE GEOCHART WITH DATA FROM FIRST TIMESTAMP
-            var countries = new Array();
-            var countriesTop5 = new Array();
-            var totalEdits = 0;
-            if (r.response.revisions) {
-                countries.push(['Country', 'Edits']);
-                for (var j = 0; j < r.response.revisions[0].summary.length; j++) {
-                    if (r.response.revisions[0].summary[j].country != "") {
-                        // Push to Geo Data Array
-                        countries.push([
-                            r.response.revisions[0].summary[j].country,
-                            r.response.revisions[0].summary[j].editSize
-                            ]);
-                        // Update max number od edits
-                        if (r.response.revisions[0].summary[j].editSize > 0) {
-                            totalEdits += r.response.revisions[0].summary[j].editSize;
-                        };
-                    }
-                }
-                // console.log(countries);
-                var geodata = google.visualization.arrayToDataTable(countries);
-                geochart.draw(geodata);
-            }
+            jquerySLider.slider( "option", "min", 0 );
+            jquerySLider.slider( "option", "max", RESPONSE.revisions.length - 1 );
 
-            // UPDATE TOP 5 CONTRIBUTORS
-            // Sort Array and update Index
-            countries.sort(function(a, b){return b[1]-a[1]});
-            var data = new google.visualization.arrayToDataTable(countries.slice(0,5));
-            chartTop5.draw(data);
+            // UPDATE CURRENT ARTICLE
+            outputArticleName.innerHTML = STATE.requestSettings.inputArticleValue.get();
 
             // UPDATE EDITS FROM ANONYMOUS
-            var anymRate = r.response.fraction_not_known * 100;
+            var anymRate = RESPONSE.fraction_not_known * 100;
             outputAnymRate.innerHTML = anymRate;
 
             // UPDATE TAG CLOUD
@@ -319,35 +272,72 @@
             data.addColumn('string', 'Label');
             data.addColumn('number', 'Value');
             //data.addColumn('string', 'Link');
-            data.addRows(r.response.most_specfic_terms.length);
-            for (var i = 0; i < r.response.most_specfic_terms.length; i++) {
-                var term = r.response.most_specfic_terms[i];
+            data.addRows(RESPONSE.most_specfic_terms.length);
+            for (var i = 0; i < RESPONSE.most_specfic_terms.length; i++) {
+                var term = RESPONSE.most_specfic_terms[i];
                 data.setValue(i, 0, term.word);
                 data.setValue(i, 1, term.tfidf);
                 // data.setValue(i, 2, "some URL");
             };
             chartTagCloud.draw(data, null);
 
-            // UPDATE DATE
-            var d = new Date(r.response.revisions[0].timeStamp);
-            var n = d.toUTCString();
-            outputDate.innerHTML = n;
-
-            // UPDATE EDITS
-            outputEdits.innerHTML = totalEdits;
-
-            // UPDATE AUTHORS
-            // coming feature...
-
-            // UPDATE CURRENT ARTICLE
-            outputArticleName.innerHTML = STATE.requestSettings.inputArticleValue.get();
+            onSetUIStateForRevision(0);
         }
         r.send();
     }
 
     // On Timeslidervalue changed
     function onSlideValueChange(e, ui ) {
-        console.log("timeslider");
+        console.log(ui.value);
+        onSetUIStateForRevision(ui.value);
+    }
+
+    // Set UI State for a specific Revision
+    function onSetUIStateForRevision(revisionIndex) {
+        // if (true) {};
+
+        // UPDATE GEOCHART WITH DATA FROM FIRST TIMESTAMP
+        var countries = new Array();
+        var countriesTop5 = new Array();
+        var totalEdits = 0;
+        var authors = 0;
+        if (RESPONSE.revisions) {
+            countries.push(['Country', 'Edits']);
+            for (var j = 0; j < RESPONSE.revisions[revisionIndex].summary.length; j++) {
+                if (RESPONSE.revisions[revisionIndex].summary[j].country != "") {
+                    // Push to Geo Data Array
+                    countries.push([
+                        RESPONSE.revisions[revisionIndex].summary[j].country,
+                        RESPONSE.revisions[revisionIndex].summary[j].editSize
+                        ]);
+                    // Update max number od edits
+                    if (RESPONSE.revisions[revisionIndex].summary[j].editSize > 0) {
+                        totalEdits += RESPONSE.revisions[revisionIndex].summary[j].editSize;
+                        authors++;
+                    };
+                }
+            }
+            // console.log(countries);
+            var geodata = google.visualization.arrayToDataTable(countries);
+            geochart.draw(geodata);
+        }
+
+        // UPDATE TOP 5 CONTRIBUTORS
+        // Sort Array and update Index
+        countries.sort(function(a, b){return b[1]-a[1]});
+        var data = new google.visualization.arrayToDataTable(countries.slice(0,5));
+        chartTop5.draw(data);
+
+        // UPDATE DATE
+        var d = new Date(RESPONSE.revisions[revisionIndex].timeStamp);
+        var n = d.toUTCString();
+        outputDate.innerHTML = n;
+
+        // UPDATE EDITS
+        outputEdits.innerHTML = totalEdits;
+
+        // UPDATE AUTHORS
+        // coming feature... >> authors
     }
 
     // Call function (fn) with a specific frequency (fps)
