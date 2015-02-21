@@ -13,13 +13,13 @@ public class TopEditsExtract extends Model {
     @Id
     public Long id;
 
-    @ManyToMany(cascade = CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "topExtracts")
     public LinkedList<TopEditsUser> topUser= new LinkedList<>();
 
-    @ManyToMany(cascade = CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "topExtracts")
     public LinkedList<TopEditsArticle> topArticles = new LinkedList<>();
 
-    @ManyToMany(cascade = CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "topExtracts")
     public LinkedList<TopEditsNation> topNations= new LinkedList<>();
 
     @Constraints.Required

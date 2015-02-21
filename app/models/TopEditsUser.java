@@ -18,8 +18,8 @@ public class TopEditsUser extends Model {
 
     public int editCounts;
 
-    @ManyToMany(mappedBy = "topUser")
-    public LinkedList<TopEditsExtract> topExtracts;
+    @ManyToOne(cascade = CascadeType.ALL)
+    public TopEditsExtract topExtracts;
 
     public static Finder<Long,TopEditsUser> find = new Finder<Long,TopEditsUser>(
             Long.class, TopEditsUser.class

@@ -18,8 +18,8 @@ public class TopEditsArticle extends Model {
     @Constraints.Required
     public String label;
 
-    @ManyToMany(mappedBy = "topArticles")
-    public LinkedList<TopEditsExtract> topExtracts;
+    @ManyToOne(cascade = CascadeType.ALL)
+    public TopEditsExtract topExtracts;
 
     public static Finder<Long,TopEditsArticle> find = new Finder<Long,TopEditsArticle>(
             Long.class, TopEditsArticle.class

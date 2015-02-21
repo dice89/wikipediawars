@@ -21,6 +21,7 @@ import java.util.stream.Stream;
 
 import models.TopEditsArticle;
 import models.TopEditsExtract;
+import models.TopEditsNation;
 import models.TopEditsUser;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Field;
@@ -712,6 +713,14 @@ public class WikiAnalyzer {
             Logger.debug(user.getKey());
             Logger.debug(user.getValue().toString());
             extractResults.topUser.add(new TopEditsUser(user.getKey(), user.getValue()));
+        }
+
+        //add top nations
+        for(Entry<String,Integer> nation: topNations) {
+            Logger.debug("topNations:");
+            Logger.debug(nation.getKey());
+            Logger.debug(nation.getValue().toString());
+            extractResults.topNations.add(new TopEditsNation(nation.getKey(), nation.getValue()));
         }
 
         extractResults.save();

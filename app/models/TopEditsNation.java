@@ -18,11 +18,15 @@ public class TopEditsNation extends Model {
 
     public int editCounts;
 
-    @ManyToMany(mappedBy = "topNations")
-    public LinkedList<TopEditsExtract> topExtracts;
+    @ManyToOne
+    public TopEditsExtract topExtracts;
 
     public static Finder<Long,TopEditsNation> find = new Finder<Long,TopEditsNation>(
             Long.class, TopEditsNation.class
     );
 
+    public TopEditsNation(String isoCode, int editCounts) {
+        this.isoCode = isoCode;
+        this.editCounts = editCounts;
+    }
 }
