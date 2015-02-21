@@ -108,7 +108,20 @@ public class WikiController extends Controller {
 
 	}
 
-
+	public static Result getCurrentTopArticles(){
+		//TODO ebean call
+		return ok("not implemented");
+	}
+	
+	public static Result getCurrentTopUsers(){
+		//TODO ebean call
+		return ok("not implemented");
+	}
+	
+	public static Result getCurrentTopNations(){
+		//TODO ebean call
+		return ok("not implemented");
+	}
 	/**
 	 * Route for analyzing an Article
 	 * 
@@ -273,7 +286,6 @@ public class WikiController extends Controller {
 		return df.format(time_days_back);
 
 	}
-	
 	
 
 	public static Result extractUserNation() {
