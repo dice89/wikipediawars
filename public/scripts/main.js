@@ -286,23 +286,12 @@
             var totalEdits = 0;
             if (r.response.revisions) {
                 countries.push(['Country', 'Edits']);
-                countriesTop5.push(['Country', 'Edits']);
                 for (var j = 0; j < r.response.revisions[0].summary.length; j++) {
                     if (r.response.revisions[0].summary[j].country != "") {
                         // Push to Geo Data Array
                         countries.push([
                             r.response.revisions[0].summary[j].country,
                             r.response.revisions[0].summary[j].editSize
-                            ]);
-                        // Push to Top 5 List
-                        countriesTop5.push([
-                            r.response.revisions[0].summary[j].country,
-                            r.response.revisions[0].summary[j].editSize
-                            // {
-                            //     v: [""+j, 0, 0], 
-                            //     f: r.response.revisions[0].summary[j].editSize+' Edits'
-                            // }, 
-                            // r.response.revisions[0].summary[j].editSize
                             ]);
                         // Update max number od edits
                         if (r.response.revisions[0].summary[j].editSize > 0) {
@@ -316,16 +305,9 @@
             }
 
             // UPDATE TOP 5 CONTRIBUTORS
-            var data = new google.visualization.arrayToDataTable(countriesTop5);
-            // data.addColumn('string', 'Country');
-            // data.addColumn('number', 'Edits');
             // Sort Array and update Index
-            // countriesTop5.sort(function(a, b){return a[1]-b[1]});
-            // for (var i = 0; i < countriesTop5.length; i++) {
-            //     countriesTop5[i][0].v[0] = i + 1;
-            //     if (i==4) {break;};
-            // };
-            // data.addRows(countriesTop5);
+            countries.sort(function(a, b){return b[1]-a[1]});
+            var data = new google.visualization.arrayToDataTable(countries.slice(0,5));
             chartTop5.draw(data);
 
             // UPDATE EDITS FROM ANONYMOUS
