@@ -196,7 +196,7 @@ public class WikiController extends Controller {
 			if(combinedResponses instanceof CombinedJSONResponse){
 				responses = (CombinedJSONResponse) combinedResponses;
 			}
-			WikiAnalyzer.getTopPagesEditorAndCountries(responses.getResponses());
+			WikiAnalyzer.getWikiAnalyzer().getTopPagesEditorAndCountries(responses.getResponses());
 	
 			return ok("test");
 		});

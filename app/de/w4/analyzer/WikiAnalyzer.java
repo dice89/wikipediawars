@@ -19,6 +19,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import org.apache.http.client.ClientProtocolException;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.FieldType;
@@ -67,6 +68,14 @@ import de.w4.analyzer.util.TFIDFWord;
  * and an analysis what the most changed N-Grams of an article are
  * 
  * @author Alexander C. Mueller, Michael Dell
+ *
+ */
+/**
+ * @author mueller
+ *
+ */
+/**
+ * @author mueller
  *
  */
 public class WikiAnalyzer {
@@ -628,16 +637,44 @@ public class WikiAnalyzer {
 		return summaryObjectList;
 	}
 
-	public static JsonNode getTopPagesEditorAndCountries(List<JsonNode> revisions) {
+	public JsonNode getTopPagesEditorAndCountries(List<JsonNode> revisions) throws ClientProtocolException, URISyntaxException, IOException, GeoIp2Exception {
 
 		Map<String, Integer> userToCount = new HashMap<String, Integer>();
 		Map<String, Integer> pageToCount = new HashMap<String, Integer>();
+		Map<String, Integer> nationToCount = new HashMap<String, Integer>();
 
 		for (JsonNode revision : revisions.get(0).get("query")
 				.get("recentchanges")) {
+			
 			String title = revision.get("title").asText();
 			String user = revision.get("user").asText();
+			//get nation for user
+			String nation = null;
+			if(user.matches("^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}$")){
+				GeoObject geo_loc = ipExtractor.getGeoLocationForIP(user);
 
+				if (geo_loc.getCountryCode() != null) {
+					nation = geo_loc.getCountryCode();
+				}
+			}else {
+				String user_nation = jedis.hget(
+						WikiController.REDIS_NATION_HASH_NAME, user);
+				if (user_nation != null) {
+					nation = user_nation;
+				}
+			}
+			// Nation  Handling
+			 if(nation != null){
+				 System.out.println("nation found");
+				 int nation_counter =0;
+				 if(nationToCount.containsKey(nation)){
+					 nation_counter = nationToCount.get(nation);
+				 }
+				 nation_counter = nation_counter+1;
+				 nationToCount.put(nation, nation_counter);
+			 }
+				
+			
 			int user_counter = 0;
 			if (userToCount.containsKey(user)) {
 				System.out.println("more than once");
@@ -657,45 +694,36 @@ public class WikiAnalyzer {
 			// get country
 		}
 		
-		Map<String,Integer> sortedPageToCount =  sortByValue(pageToCount,-1);
-		
-	
-		Iterator it = sortedPageToCount.entrySet().iterator();
-		List<Entry<String,Integer>> topPages = new ArrayList<>();
-		int i = 0;
-		while(it.hasNext()){
-			Entry<String,Integer> pair = (Entry) it.next();
-			if(i < 10){
-				topPages.add(pair);
-			}else {
-				break;
-			}
-			i++;
-		}
 
-		System.out.println(topPages.get(0).getKey() +topPages.get(0).getValue() );
-		Map<String,Integer> sortedUserToCount =  sortByValue(userToCount,-1);
+		List<Entry<String,Integer>> topUsers= getTopValues(userToCount,10);
+		List<Entry<String,Integer>> topPages = getTopValues(pageToCount,10);
+		List<Entry<String,Integer>> topNations = getTopValues(nationToCount,10);
 		
-		it = sortedPageToCount.entrySet().iterator();
-		List<Entry<String,Integer>> topUsers = new ArrayList<>();
-		i = 0;
-		while(it.hasNext()){
-			Entry<String,Integer> pair = (Entry) it.next();
-			if(i < 10){
-				topUsers.add(pair);
-			}else {
-				break;
-			}
-			i++;
-		}
-		
-		System.out.println(topUsers.get(0).getKey() +topUsers.get(0).getValue() );
+		//System.out.println(topUsers.get(0).getKey() +topUsers.get(0).getValue() );
 		JsonNode test =  Json.toJson(topPages);
 		//TODO store top pages and top users in meaning full way per day and join both jsons to reply
-		System.out.println(test.toString());
+		//System.out.println(test.toString());
+		
+		System.out.println(topNations.get(0).getKey() +topNations.get(0).getValue() );
 		
 		return Json.toJson(test);
 
+	}
+	
+	private static List<Entry<String,Integer>> getTopValues(Map<String, Integer> valueToCountMap, int topN) {
+		Iterator it = valueToCountMap.entrySet().iterator();
+		List<Entry<String,Integer>> topValues = new ArrayList<>();
+		int i = 0;
+		while(it.hasNext()){
+			Entry<String,Integer> pair = (Entry) it.next();
+			if(i < topN){
+				topValues.add(pair);
+			}else {
+				break;
+			}
+			i++;
+		}	
+		return topValues;
 	}
 
 	private static <K, V extends Comparable<? super V>> Map<K, V> sortByValue(
