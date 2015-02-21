@@ -528,7 +528,7 @@
 
         console.log(oSearchField.value);
 
-        var timescope = "6m";
+        var timescope = "1m";
         var aggregation = "m";
 
         // Execute Query
