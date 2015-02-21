@@ -316,7 +316,7 @@
             }
 
             // UPDATE TOP 5 CONTRIBUTORS
-            var data = new google.visualization.DataTable();
+            var data = new google.visualization.arrayToDataTable(countriesTop5);
             // data.addColumn('string', 'Country');
             // data.addColumn('number', 'Edits');
             // Sort Array and update Index
@@ -325,7 +325,7 @@
             //     countriesTop5[i][0].v[0] = i + 1;
             //     if (i==4) {break;};
             // };
-            data.addRows(countriesTop5.slice(0,5));
+            // data.addRows(countriesTop5);
             chartTop5.draw(data);
 
             // UPDATE EDITS FROM ANONYMOUS
