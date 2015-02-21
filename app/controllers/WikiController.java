@@ -78,7 +78,7 @@ public class WikiController extends Controller {
 			return nations;
 			
 		} catch (Exception e){
-			System.out.println(e);
+		
 			return new ArrayList<String>();
 		}
 	}
@@ -139,7 +139,7 @@ public class WikiController extends Controller {
 
 		// format timely scope
 		String end_date_utc_string = getUTCDateStringForScope(time_scope);
-		System.out.println(end_date_utc_string);
+		
 		final int aggregation_type = getAggregationType(aggregation_string);
 
 		// check cache
@@ -413,7 +413,7 @@ public class WikiController extends Controller {
 		return holder.get().flatMap(response ->{
 			JsonNode json_response = response.asJson();
 			responses.add(json_response);
-			System.out.println(json_response);
+			
 			if (!json_response.has("query-continue")) {
 				Promise<Object> response_promise = Promise
 						.promise(() -> new CombinedJSONResponse(responses));
