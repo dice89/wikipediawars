@@ -1,0 +1,310 @@
+Papua New Guinea;PG
+Cambodia;KH
+Costa_Rica;CR
+Kazakhstan;KZ
+Paraguay;PY
+El_Salvador;SV
+Syria;SY
+Åland Islands;AX
+Solomon Islands;SB
+Bahamas;BS
+Montserrat;MS
+Mali;ML
+Marshall Islands;MH
+Panama;PA
+Guadeloupe;GP
+Central_African_Republic;CF
+Laos;LA
+Argentina;AR
+Moldova (Republic of);MD
+Seychelles;SC
+Zambia;ZM
+Belize;BZ
+Burkina_Faso;BF
+Bahrain;BH
+Congo;CG
+Guinea-Bissau;GW
+Namibia;NA
+Comoros;KM
+Finland;FI
+Faroe Islands;FO
+Georgia;GE
+Saint Kitts and Nevis;KN
+South_Korea;KR
+Yemen;YE
+Eritrea;ER
+Puerto Rico;PR
+Madagascar;MG
+Aruba;AW
+Libya;LY
+Svalbard and Jan Mayen;SJ
+C%C3%B4te_d'Ivoire;CI
+Sweden;SE
+South Georgia and the South Sandwich Islands;GS
+Malawi;MW
+Cocos (Keeling) Islands;CC
+Andorra;AD
+Liechtenstein;LI
+Poland;PL
+Bulgaria;BG
+Jordan;JO
+Tunisia;TN
+Côte d'Ivoire;CI
+Tuvalu;TV
+United Arab Emirates;AE
+Saudi_Arabia;SA
+Kenya;KE
+French Polynesia;PF
+Brunei;BN
+Lebanon;LB
+Djibouti;DJ
+Azerbaijan;AZ
+Cuba;CU
+Czech Republic;CZ
+Saint Lucia;LC
+Mauritania;MR
+Guernsey;GG
+Republic of Macedonia;MK
+Mayotte;YT
+New_Zealand;NZ
+San Marino;SM
+Israel;IL
+Australia;AU
+Tajikistan;TJ
+Myanmar;MM
+Cameroon;CM
+Gibraltar;GI
+Cyprus;CY
+Sri_Lanka;LK
+Northern Mariana Islands;MP
+Malaysia;MY
+Iceland;IS
+Oman;OM
+Armenia;AM
+Gabon;GA
+South_Africa;ZA
+Luxembourg;LU
+Brazil;BR
+East_Timor;TL
+Turks and Caicos Islands;TC
+Algeria;DZ
+Slovenia;SI
+Cabo Verde;CV
+Jersey;JE
+Republic of the Congo;CG
+"Taiwan, Province of China";TW
+Antigua and Barbuda;AG
+Colombia;CO
+Ecuador;EC
+Iran (Islamic Republic of);IR
+Georgia_(country);GE
+Republic_of_Macedonia;MK
+Moldova;MD
+Lao People's Democratic Republic;LA
+North_Korea;KP
+Vanuatu;VU
+United States Minor Outlying Islands;UM
+C%C3%B4te d'Ivoire;CI
+Honduras;HN
+Italy;IT
+Antarctica;AQ
+Nauru;NR
+United_Kingdom;GB
+Haiti;HT
+Afghanistan;AF
+Burundi;BI
+Russian Federation;RU
+Singapore;SG
+French Guiana;GF
+Federated States of Micronesia;FM
+American Samoa;AS
+Christmas Island;CX
+The_Gambia;GM
+Korea (Democratic People's Republic of);KP
+Russia;RU
+Netherlands;NL
+Saint_Lucia;LC
+China;CN
+Martinique;MQ
+Saint Pierre and Miquelon;PM
+Democratic_Republic_of_the_Congo;CD
+Kyrgyzstan;KG
+Bhutan;BT
+Romania;RO
+Togo;TG
+Falkland Islands (Malvinas);FK
+Philippines;PH
+"Palestine, State of";PS
+Federated_States_of_Micronesia;FM
+Uzbekistan;UZ
+Pitcairn;PN
+Zimbabwe;ZW
+Republic_of_Ireland;IE
+British Indian Ocean Territory;IO
+"Tanzania, United Republic of";TZ
+Montenegro;ME
+Indonesia;ID
+Dominica;DM
+Dominican_Republic;DO
+Benin;BJ
+Angola;AO
+South_Sudan;SS
+Virgin Islands (British);VG
+Sudan;SD
+East Timor;TL
+Portugal;PT
+Brunei Darussalam;BN
+New Caledonia;NC
+North Korea;KP
+Grenada;GD
+Greece;GR
+Cayman Islands;KY
+Congo (Democratic Republic of the);CD
+Latvia;LV
+Mongolia;MN
+Iran;IR
+Morocco;MA
+Kingdom of the Netherlands;NL
+Sierra_Leone;SL
+Guatemala;GT
+Guyana;GY
+Equatorial_Guinea;GQ
+Iraq;IQ
+Chile;CL
+United_States;US
+Nepal;NP
+The Gambia;GM
+Heard Island and McDonald Islands;HM
+Isle of Man;IM
+Ukraine;UA
+Tanzania;TZ
+Ghana;GH
+Curaçao;CW
+Holy See;VA
+Anguilla;AI
+India;IN
+Canada;CA
+Maldives;MV
+Turkey;TR
+Belgium;BE
+The Bahamas;BS
+United_Arab_Emirates;AE
+South Africa;ZA
+Trinidad and Tobago;TT
+Bermuda;BM
+Central African Republic;CF
+Democratic Republic of the Congo;CD
+Jamaica;JM
+Peru;PE
+Turkmenistan;TM
+Venezuela (Bolivarian Republic of);VE
+Germany;DE
+Fiji;FJ
+Tokelau;TK
+Hong Kong;HK
+United States;US
+"Bonaire, Sint Eustatius and Saba";BQ
+Guinea;GN
+Somalia;SO
+Chad;TD
+Sao Tome and Principe;ST
+Republic_of_the_Congo;CG
+Thailand;TH
+United Kingdom of Great Britain and Northern Ireland;GB
+Equatorial Guinea;GQ
+Kiribati;KI
+Costa Rica;CR
+Saint Martin (French part);MF
+Vietnam;VN
+Czech_Republic;CZ
+Nigeria;NG
+Kuwait;KW
+Croatia;HR
+Syrian Arab Republic;SY
+Uruguay;UY
+Sri Lanka;LK
+Cook Islands;CK
+Timor-Leste;TL
+United Kingdom;GB
+Switzerland;CH
+Kingdom_of_the_Netherlands;NL
+Samoa;WS
+Spain;ES
+Venezuela;VE
+Liberia;LR
+Burkina Faso;BF
+Swaziland;SZ
+Palau;PW
+Saint Barthélemy;BL
+Estonia;EE
+Cape_Verde;CV
+Solomon_Islands;SB
+Wallis and Futuna;WF
+Niue;NU
+South Korea;KR
+Austria;AT
+Mozambique;MZ
+El Salvador;SV
+Monaco;MC
+Guam;GU
+Lesotho;LS
+Tonga;TO
+Western Sahara;EH
+Hungary;HU
+South Sudan;SS
+Réunion;RE
+Japan;JP
+San_Marino;SM
+Belarus;BY
+Mauritius;MU
+Marshall_Islands;MH
+Bouvet Island;BV
+Albania;AL
+Bolivia (Plurinational State of);BO
+Norfolk Island;NF
+Virgin Islands (U.S.);VI
+New Zealand;NZ
+Sint Maarten (Dutch part);SX
+Senegal;SN
+Papua_New_Guinea;PG
+Micronesia (Federated States of);FM
+"Saint Helena, Ascension and Tristan da Cunha";SH
+Ethiopia;ET
+Macedonia (the former Yugoslav Republic of);MK
+United States of America;US
+Egypt;EG
+Sierra Leone;SL
+Bolivia;BO
+Malta;MT
+Saudi Arabia;SA
+Cape Verde;CV
+Pakistan;PK
+Gambia;GM
+Qatar;QA
+Ireland;IE
+Slovakia;SK
+Lithuania;LT
+Serbia;RS
+France;FR
+Bosnia and Herzegovina;BA
+Korea (Republic of);KR
+The_Bahamas;BS
+Republic of Ireland;IE
+Niger;NE
+Georgia (country);GE
+Rwanda;RW
+French Southern Territories;TF
+Burma;MM
+Bangladesh;BD
+Barbados;BB
+Nicaragua;NI
+Norway;NO
+Botswana;BW
+Saint Vincent and the Grenadines;VC
+Macao;MO
+Dominican Republic;DO
+Denmark;DK
+Uganda;UG
+Mexico;MX
+Suriname;SR
+Greenland;GL
