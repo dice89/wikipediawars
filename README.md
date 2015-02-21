@@ -115,7 +115,7 @@ Top edited articles of the last day
 "editCounts": 7,
 "label": "List of modernized retellings of old stories"
 },
-...
+//...
 {}
 ]
 ```
@@ -134,7 +134,7 @@ The countries that edited the most in the last couple of days
 "isoCode": "US",
 "editCounts": 20
 },
-.....
+//...
 {
 "id": 20,
 "isoCode": "ES",
