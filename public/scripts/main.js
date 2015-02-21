@@ -12,6 +12,11 @@
         btnTimePicker = document.getElementById('time-picker'),
         btnStartAnalysis = document.getElementById('start-analysis'),
         jquerySLider = $('#slider'),
+        outputDate = document.getElementById('output-date'),
+        outputArticleName = document.getElementById('output-article'),
+        outputAnymRate = document.getElementById('data-anym-rate-value'),
+        outputEdits = document.getElementById('output-edits'),
+        RESPONSE,
         STATE = {
             requestSettings: {
                 inputIsValid: {
@@ -56,11 +61,11 @@
                                 break;
                             case "3m":
                                 classie.add(document.querySelector('[data-timeframe="3m"]'), 'active');
-                                STATE.requestSettings.aggregation("w");
+                                STATE.requestSettings.aggregation.set("w");
                                 break;
                             case "12m":
                                 classie.add(document.querySelector('[data-timeframe="12m"]'), 'active');
-                                STATE.requestSettings.aggregation("m");
+                                STATE.requestSettings.aggregation.set("m");
                                 break;
                             default:
                                 // Exception
@@ -128,16 +133,18 @@
 
             // init tag cloud and draw initial words
             var data = new google.visualization.DataTable();
-            data.addColumn('string', 'Text1');
-            data.addColumn('string', 'Text2');
+            data.addColumn('string', 'Label');
+            data.addColumn('number', 'Value');
+            data.addColumn('string', 'Link');
             data.addRows(3);
-            data.setCell(0, 0, 'This is a test');
-            data.setCell(0, 1, 'This test is quite hard');
-            data.setCell(1, 0, 'A hard test or not?');
-            data.setCell(1, 1, 'This was not too hard');
-            data.setCell(2, 0, 'Hard hard hard this is so hard !!!');
-            data.setCell(2, 1, 'For every test there is a solution. For every one');
-            chartTagCloud = new WordCloud(document.getElementById('tag-cloud'));
+            data.setValue(0, 0, 'First Term');
+            data.setValue(0, 1, 10);
+            data.setValue(1, 0, 'Second');
+            data.setValue(1, 1, 30);
+            data.setValue(1, 2, 'http://www.google.com');
+            data.setValue(2, 0, 'Third');
+            data.setValue(2, 1, 20);
+            chartTagCloud = new TermCloud(document.getElementById('tag-cloud'));
             chartTagCloud.draw(data, null);
             });
     }
@@ -269,24 +276,89 @@
         r.responseType = "json";
         r.onreadystatechange = function() {
             if (r.readyState != 4 || r.status != 200) return;
-            console.log(r.status);
+            console.log(r.response);
+
+            RESPONSE = r.response;
 
             // UPDATE GEOCHART WITH DATA FROM FIRST TIMESTAMP
             var countries = new Array();
+            var countriesTop5 = new Array();
+            var totalEdits = 0;
             if (r.response.revisions) {
                 countries.push(['Country', 'Edits']);
+                countriesTop5.push(['Country', 'Edits']);
                 for (var j = 0; j < r.response.revisions[0].summary.length; j++) {
                     if (r.response.revisions[0].summary[j].country != "") {
+                        // Push to Geo Data Array
                         countries.push([
                             r.response.revisions[0].summary[j].country,
                             r.response.revisions[0].summary[j].editSize
                             ]);
+                        // Push to Top 5 List
+                        countriesTop5.push([
+                            r.response.revisions[0].summary[j].country,
+                            r.response.revisions[0].summary[j].editSize
+                            // {
+                            //     v: [""+j, 0, 0], 
+                            //     f: r.response.revisions[0].summary[j].editSize+' Edits'
+                            // }, 
+                            // r.response.revisions[0].summary[j].editSize
+                            ]);
+                        // Update max number od edits
+                        if (r.response.revisions[0].summary[j].editSize > 0) {
+                            totalEdits += r.response.revisions[0].summary[j].editSize;
+                        };
                     }
                 }
                 // console.log(countries);
                 var geodata = google.visualization.arrayToDataTable(countries);
                 geochart.draw(geodata);
             }
+
+            // UPDATE TOP 5 CONTRIBUTORS
+            var data = new google.visualization.DataTable();
+            // data.addColumn('string', 'Country');
+            // data.addColumn('number', 'Edits');
+            // Sort Array and update Index
+            // countriesTop5.sort(function(a, b){return a[1]-b[1]});
+            // for (var i = 0; i < countriesTop5.length; i++) {
+            //     countriesTop5[i][0].v[0] = i + 1;
+            //     if (i==4) {break;};
+            // };
+            data.addRows(countriesTop5.slice(0,5));
+            chartTop5.draw(data);
+
+            // UPDATE EDITS FROM ANONYMOUS
+            var anymRate = r.response.fraction_not_known * 100;
+            outputAnymRate.innerHTML = anymRate;
+
+            // UPDATE TAG CLOUD
+            var data = new google.visualization.DataTable();
+            data.addColumn('string', 'Label');
+            data.addColumn('number', 'Value');
+            //data.addColumn('string', 'Link');
+            data.addRows(r.response.most_specfic_terms.length);
+            for (var i = 0; i < r.response.most_specfic_terms.length; i++) {
+                var term = r.response.most_specfic_terms[i];
+                data.setValue(i, 0, term.word);
+                data.setValue(i, 1, term.tfidf);
+                // data.setValue(i, 2, "some URL");
+            };
+            chartTagCloud.draw(data, null);
+
+            // UPDATE DATE
+            var d = new Date(r.response.revisions[0].timeStamp);
+            var n = d.toUTCString();
+            outputDate.innerHTML = n;
+
+            // UPDATE EDITS
+            outputEdits.innerHTML = totalEdits;
+
+            // UPDATE AUTHORS
+            // coming feature...
+
+            // UPDATE CURRENT ARTICLE
+            outputArticleName.innerHTML = STATE.requestSettings.inputArticleValue.get();
         }
         r.send();
     }

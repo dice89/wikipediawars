@@ -39,7 +39,7 @@
 
     <!-- RESSOURCES -->
     <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans:300italic,400,600italic,600,700italic,700,800italic,800">
-    <link rel="stylesheet" type="text/css" href="http://visapi-gadgets.googlecode.com/svn/trunk/wordcloud/wc.css" />
+    <link rel="stylesheet" type="text/css" href="http://visapi-gadgets.googlecode.com/svn/trunk/termcloud/tc.css"/>
 
     <!-- Styles -->
     <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
@@ -63,7 +63,7 @@
             <form class="navbar-form navbar-left" role="search">
                 <button id="btn-toggle-settings" type="button" class="btn btn-default">Toggle Side Panel</button>
             </form>
-            <p class="navbar-text">Current Article</p>
+            <p id="output-article" class="navbar-text">Current Article</p>
             <div class="navbar-header">
                 <a class="navbar-brand" href="#">
                     <span>#WikiWars</span>
@@ -85,8 +85,10 @@
 
     <!-- INFOBAR -->
     <div id="infobar" class="container-fluid">
-        <h5 class="pull-left"><span>2.213</span>&nbsp;Edits</h5>
-        <h5 class="pull-left"><span>123</span>&nbsp;Authors</h5>
+        <h5 class="pull-left">Date:&nbsp;<span id="output-date">01.10.1988</span>&nbsp;</h5>
+        <h5 class="pull-left"><span id="output-edits">2.213</span>&nbsp;Edits&nbsp;</h5>
+        <!-- COMING SOON -->
+        <!-- h5 class="pull-left"><span>123</span>&nbsp;Authors&nbsp;</h5 -->
     </div>
 
     <!-- SIDEPANELS -->
@@ -180,7 +182,7 @@
     <script src="jquery-ui/jquery-ui.min.js"></script>
     <script src="bootstrap/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="https://www.google.com/jsapi"></script>
-    <script type="text/javascript" src="http://visapi-gadgets.googlecode.com/svn/trunk/wordcloud/wc.js"></script>
+    <script type="text/javascript" src="http://visapi-gadgets.googlecode.com/svn/trunk/termcloud/tc.js"></script>
     <script type="text/javascript">
     // Load Google APIs (can't be done in anonymous function)
     google.load('visualization', '1', {
