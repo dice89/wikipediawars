@@ -291,13 +291,14 @@
 
     // On Timeslidervalue changed
     function onSlideValueChange(e, ui ) {
-        console.log(ui.value);
+        // console.log(ui.value);
         onSetUIStateForRevision(ui.value);
     }
 
     // Set UI State for a specific Revision
     function onSetUIStateForRevision(revisionIndex) {
-        // if (true) {};
+        // Prevent for null pointer
+        // if (RESPONSE){if(RESPONSE.revisions.length >= revisionIndex) {return}}
 
         // UPDATE GEOCHART WITH DATA FROM FIRST TIMESTAMP
         var countries = new Array();
