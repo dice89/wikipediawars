@@ -70,7 +70,7 @@
                             default:
                                 // Exception
                         }
-                        STATE.requestSettings.inputArticleValue._store = v;},
+                        STATE.requestSettings.timeframe._store = v;},
                     get: function(){return STATE.requestSettings.timeframe._store;},
                     _store: "1m"},
                 aggregation: {
@@ -250,6 +250,9 @@
         r.open("GET", "/revisions/analyse/"+searchTerm+
                         "?timescope="+timeframe+
                         "&aggregation="+aggregation, true);
+        console.log("/revisions/analyse/"+searchTerm+
+                        "?timescope="+timeframe+
+                        "&aggregation="+aggregation);
         r.responseType = "json";
         r.onreadystatechange = function() {
             if (r.readyState != 4 || r.status != 200) return;
