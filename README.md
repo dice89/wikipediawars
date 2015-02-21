@@ -70,14 +70,14 @@ Top active users of the last day
 + Response-Type: application/json
 + Example Call: /edits/top/users
 + Response: 
-```json 
+```javascript 
 [
 {
 "id": 11,
 "name": "DavidMar86hdf",
 "editCounts": 20
 },
-....
+//...
 {}
 ]
 ```
@@ -89,26 +89,7 @@ Top edited articles of the last day
 + Response-Type: application/json
 + Example Call: /edits/top/articles
 + Response:
-```json
-[
-{
-"id": 31,
-"editCounts": 7,
-"label": "List of modernized retellings of old stories"
-},
-...
-{}
-]
-```
-
-##### Top edited articles on Wikipedia
-Top edited articles of the last day
-+ URL: /edits/top/articles
-+ Method: GET
-+ Response-Type: application/json
-+ Example Call: /edits/top/articles
-+ Response:
-```json
+```javascript
 [
 {
 "id": 31,
@@ -127,7 +108,7 @@ The countries that edited the most in the last couple of days
 + Response-Type: application/json
 + Example Call: /edits/top/nations
 + Response:
-```json
+```javascript
 [
 {
 "id": 11,
