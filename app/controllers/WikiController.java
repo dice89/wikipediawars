@@ -287,7 +287,7 @@ public class WikiController extends Controller {
 		df.setTimeZone(tz);
 	
 		
-		long day_in_ms = 1000*60*60;
+		long day_in_ms = 1000*60*60*24;
 		long time_days_back = System.currentTimeMillis() - days_back*day_in_ms;
 
 		return df.format(time_days_back);
