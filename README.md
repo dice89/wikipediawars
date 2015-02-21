@@ -30,7 +30,7 @@ The following Endpoints are available as a JSON API:
   - article: The name of the article as in wikipedia
   - timescope: Valid input formats: 1m,3m,6m : The timeframe within the articles will be analyzed starting from today
   - aggregation: Valid input values: d,w,m: Defines the aggregation mode of the analysis. The results are either aggregated by day, by week or by month
-+ Example Call: /revisions/analyse/Germany?timescope=1m&aggregation=w
++ Example Call: http://www.wiki-wars.org/revisions/analyse/Germany?timescope=1m&aggregation=w
 + Example Response: Coming Soon!
 
 
@@ -43,7 +43,7 @@ Wrapper Service for wikpedia suggest services.
 + Parameters:
   - search: Search String
   - limit: Maximum Number of suggestions returned
-+ Example Call: /revisions/suggest?search=Berl&limit=4
++ Example Call: http://www.wiki-wars.org/revisions/suggest?search=Berl&limit=4
 + Example Response: Coming Soon!
 
 #### Top active Users, Region and Articles on Wikipedia
@@ -51,7 +51,7 @@ Top changed articles and how active users and regions are in the world in the la
 + URL: /edits/top
 + Method: GET
 + Response-Type: application/json
-+ Example Call: /edits/top
++ Example Call: http://www.wiki-wars.org/edits/top
 + Response:
 ```json 
 {
@@ -68,7 +68,7 @@ Top active users of the last day
 + URL: /edits/top/users
 + Method: GET
 + Response-Type: application/json
-+ Example Call: /edits/top/users
++ Example Call:  http://www.wiki-wars.org/edits/top/users
 + Response: 
 ```javascript 
 [
@@ -87,7 +87,7 @@ Top edited articles of the last day
 + URL: /edits/top/articles
 + Method: GET
 + Response-Type: application/json
-+ Example Call: /edits/top/articles
++ Example Call:  http://www.wiki-wars.org/edits/top/articles
 + Response:
 ```javascript
 [
@@ -106,7 +106,7 @@ The countries that edited the most in the last couple of days
 + URL: /edits/top/nations
 + Method: GET
 + Response-Type: application/json
-+ Example Call: /edits/top/nations
++ Example Call:  http://www.wiki-wars.org/edits/top/nations
 + Response:
 ```javascript
 [
