@@ -640,6 +640,9 @@ public class WikiAnalyzer {
 				.get("recentchanges")) {
 			
 			String title = revision.get("title").asText();
+			//filter out all special pages -> they contain :
+			if(title.contains(":")) continue;
+			
 			String user = revision.get("user").asText();
 			//get nation for user
 			String nation = null;
@@ -724,14 +727,13 @@ public class WikiAnalyzer {
         }
 
         extractResults.save();
-
+        	
         return Json.toJson(test);
-
-
 	}
 	
 	private static List<Entry<String,Integer>> getTopValues(Map<String, Integer> valueToCountMap, int topN) {
-		Iterator it = valueToCountMap.entrySet().iterator();
+		
+		Iterator it = sortByValue(valueToCountMap, -1).entrySet().iterator();
 		List<Entry<String,Integer>> topValues = new ArrayList<>();
 		int i = 0;
 		while(it.hasNext()){

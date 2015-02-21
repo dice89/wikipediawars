@@ -18,3 +18,5 @@ dump.rdb
 app/experiments/Diffexperiments.java
 
 
+
+*.sql
