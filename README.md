@@ -46,16 +46,51 @@ Wrapper Service for wikpedia suggest services.
 + Example Call: /revisions/suggest?search=Berl&limit=4
 + Example Response: Coming Soon!
 
-#### User Geo Heursitic service
-Service that implements a simple heuristic to guess the country of origin of wikipedia user, based on its profile page
-
-+ URL: /usergeo/:user  
+#### Top active Users, Region and Articles on Wikipedia
+Top changed articles and how active users and regions are in the world in the last day
++ URL: /edits/top
 + Method: GET
-+ Response-Type: application/text
-+ Parameters:
-  - user: The wikipedia user name of the person to guess the geo location for
-+ Example Call: /usergeo/KylieTastic
-+ Response: Coming Soon!
++ Response-Type: application/json
++ Example Call: /edits/top
++ Response: ```` {
+"id": 7,
+"topUser": [],
+"topArticles": [],
+"topNations": [],
+"timestamp": 1424523911000
+}````
+
+##### Top active Users on Wikipedia
+Top active users of the last day
++ URL: /edits/top/users
++ Method: GET
++ Response-Type: application/json
++ Example Call: /edits/top/users
++ Response: ````[
+{
+"id": 11,
+"name": "DavidMar86hdf",
+"editCounts": 20
+},
+....
+{}
+]````
+
+##### Top edited articles on Wikipedia
+Top active users of the last day
++ URL: /edits/top/articles
++ Method: GET
++ Response-Type: application/json
++ Example Call: /edits/top/articles
++ Response: ````[
+{
+"id": 31,
+"editCounts": 7,
+"label": "List of modernized retellings of old stories"
+},
+...
+{}
+]````
 
 
 
