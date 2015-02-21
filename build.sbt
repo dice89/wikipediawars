@@ -52,3 +52,10 @@ resolvers ++= Seq(
   "pk11 repo" at "http://pk11-scratch.googlecode.com/svn/trunk"
 )
 
+TaskKey[Unit]("stop") := {
+  val pidFile = target.value / "universal" / "stage" / "RUNNING_PID"
+  if (!pidFile.exists) throw new Exception("App not started!")
+  val pid = IO.read(pidFile)
+  s"kill $pid".!
+  println(s"Stopped application with process ID $pid")
+}
