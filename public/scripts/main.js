@@ -11,10 +11,79 @@
         inputDate = document.getElementById('reference-date'),
         btnTimePicker = document.getElementById('time-picker'),
         btnStartAnalysis = document.getElementById('start-analysis'),
-        jquerySLider = $('#slider')
-        state = {
-            inputIsValid: null
-        };
+        jquerySLider = $('#slider'),
+        STATE = {
+            requestSettings: {
+                inputIsValid: {
+                    set: function(v){
+                        switch(v) {
+                            case true:
+                                classie.remove(inputArticle.parentNode, 'has-error');
+                                classie.add(inputArticle.parentNode, 'has-success');
+                                classie.add(inputArticle.parentNode, 'has-feedback');
+                                break;
+                            case false:
+                                classie.remove(inputArticle.parentNode, 'has-success');
+                                classie.add(inputArticle.parentNode, 'has-error');
+                                classie.add(inputArticle.parentNode, 'has-feedback');
+                                break;
+                            case null:
+                                classie.remove(inputArticle.parentNode, 'has-success');
+                                classie.remove(inputArticle.parentNode, 'has-error');
+                                classie.remove(inputArticle.parentNode, 'has-feedback');
+                                break;
+                            default:
+                                // Exception
+                        }
+                        STATE.requestSettings.inputIsValid._store = v;},
+                    get: function(){return STATE.requestSettings.inputIsValid._store},
+                    _store: null},
+                inputArticleValue: {
+                    set: function(v){
+                        inputArticle.value = v;
+                        STATE.requestSettings.inputArticleValue._store = v;},
+                    get: function(){return inputArticle.value},
+                    _store: ""},
+                timeframe: {
+                    set: function(v){
+                        for (var i = btnListTimeframe.length - 1; i >= 0; i--) {
+                            classie.remove(btnListTimeframe[i], 'active');
+                        };
+                        switch (v) {
+                            case "1m":
+                                classie.add(document.querySelector('[data-timeframe="1m"]'), 'active');
+                                STATE.requestSettings.aggregation.set("d");
+                                break;
+                            case "3m":
+                                classie.add(document.querySelector('[data-timeframe="3m"]'), 'active');
+                                STATE.requestSettings.aggregation("w");
+                                break;
+                            case "12m":
+                                classie.add(document.querySelector('[data-timeframe="12m"]'), 'active');
+                                STATE.requestSettings.aggregation("m");
+                                break;
+                            default:
+                                // Exception
+                        }
+                        STATE.requestSettings.inputArticleValue._store = v;},
+                    get: function(){return STATE.requestSettings.timeframe._store;},
+                    _store: "1m"},
+                aggregation: {
+                    set: function(v){
+                        switch(v){
+                            case "d": break;
+                            case "w": break;
+                            case "m": break;
+                            default:
+                                // Exception
+                        }
+                       STATE.requestSettings.aggregation._store = v; 
+                    },
+                    get: function(){return STATE.requestSettings.aggregation._store;},
+                    _store: "d"
+                }
+                }
+            };
 
     // Bootstrap
     window.addEventListener('DOMContentLoaded', function(e) {
@@ -133,47 +202,48 @@
 
     // On user input for wikipedia article
     function onAutocomplete(e) {
-        console.log("Wikipiedia User Input");
-
-        var searchInput = inputArticle.value;
-        // if (suppressValidation != true) {
-        //     oSearchField.className = oSearchField.className.replace(" valid", "");
-        //     oGoBtn.className = oGoBtn.className.replace(" display", "");
-        // }
-        // if (suggestionIndex >= 0) {
-        //     aListEnries[suggestionIndex].className = "";
-        //     suggestionIndex = -1;
-        // }
+        var searchInput = STATE.requestSettings.inputArticleValue.get();
 
         // Input validation
         searchInput = searchInput.replace(/[%?=&]/ig, ""); ///\W/gi, "");
-        inputArticle.value = searchInput;
+        STATE.requestSettings.inputArticleValue.set(searchInput);
 
-        // Submit Query
-        var r = new XMLHttpRequest();
-        r.open("GET", "/revisions/suggest?search=" + searchInput + "&limit=4", true);
-        r.responseType = "json";
-        r.onreadystatechange = function() {
-            if (r.readyState != 4 || r.status != 200) return;
-            // Return autocomplete entries
-            for (var i = 0; i < r.response[1].length; i++) {
-                var autocompleteEntry = r.response[1][i];
-                console.log(autocompleteEntry);
-                if (autocompleteEntry.toLowerCase() == searchInput.toLowerCase()) {
-                    // add has-success has-feedback
-                    inputArticle.value = autocompleteEntry;
-                    classie.add(inputArticle.parentNode, 'has-success');
-                    classie.add(inputArticle.parentNode, 'has-feedback');
-
+        if (searchInput != "") {
+            // Submit Query
+            var r = new XMLHttpRequest();
+            r.open("GET", "/revisions/suggest?search=" + searchInput + "&limit=4", true);
+            r.responseType = "json";
+            r.onreadystatechange = function() {
+                if (r.readyState != 4 || r.status != 200) return;
+                // Return autocomplete entries
+                var searchInputIsValid = false;
+                var match;
+                for (var i = 0; i < r.response[1].length; i++) {
+                    var autocompleteEntry = r.response[1][i];
+                    console.log(autocompleteEntry);
+                    if (autocompleteEntry.toLowerCase() == searchInput.toLowerCase()) {
+                        // add has-success has-feedback
+                        searchInputIsValid = true;
+                        match = autocompleteEntry;
+                    }
                 }
+                // Check if there was a match
+                if (searchInputIsValid) {
+                    STATE.requestSettings.inputArticleValue.set(match);
+                    STATE.requestSettings.inputIsValid.set(true);
+                } else {
+                    STATE.requestSettings.inputIsValid.set(false);
+                };
             }
-        }
-        r.send();
+            r.send();
+        } else {
+            STATE.requestSettings.inputIsValid.set(null);
+        };
     }
 
     // On change timeframe
     function onChangeTimeframe(e) {
-        console.log("Timeframe Select");
+        STATE.requestSettings.timeframe.set(e.currentTarget.getAttribute('data-timeframe'));
     }
 
     // On user input reference date
@@ -188,7 +258,37 @@
 
     // On START ANALYSIS
     function onStartAnalysis(e) {
-        console.log("start analysis");
+        // Execute Query
+        var r = new XMLHttpRequest();
+        var searchTerm = escape(STATE.requestSettings.inputArticleValue.get());
+        var timeframe = STATE.requestSettings.timeframe.get();
+        var aggregation = STATE.requestSettings.aggregation.get();
+        r.open("GET", "/revisions/analyse/"+searchTerm+
+                        "?timescope="+timeframe+
+                        "&aggregation="+aggregation, true);
+        r.responseType = "json";
+        r.onreadystatechange = function() {
+            if (r.readyState != 4 || r.status != 200) return;
+            console.log(r.status);
+
+            // UPDATE GEOCHART WITH DATA FROM FIRST TIMESTAMP
+            var countries = new Array();
+            if (r.response.revisions) {
+                countries.push(['Country', 'Edits']);
+                for (var j = 0; j < r.response.revisions[0].summary.length; j++) {
+                    if (r.response.revisions[0].summary[j].country != "") {
+                        countries.push([
+                            r.response.revisions[0].summary[j].country,
+                            r.response.revisions[0].summary[j].editSize
+                            ]);
+                    }
+                }
+                // console.log(countries);
+                var geodata = google.visualization.arrayToDataTable(countries);
+                geochart.draw(geodata);
+            }
+        }
+        r.send();
     }
 
     // On Timeslidervalue changed
