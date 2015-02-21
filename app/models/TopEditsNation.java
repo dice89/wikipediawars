@@ -4,6 +4,8 @@ import java.util.*;
 
 import javax.persistence.*;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import play.db.ebean.*;
 import play.data.format.*;
 import play.data.validation.*;
@@ -21,7 +23,8 @@ public class TopEditsNation extends Model {
 
 	public int editCounts;
 
-    @ManyToOne(fetch=FetchType.LAZY)
+    @ManyToOne(fetch=FetchType.EAGER)
+    @JsonIgnore
     public TopEditsExtract topExtracts;
 
 

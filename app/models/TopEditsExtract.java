@@ -14,13 +14,13 @@ public class TopEditsExtract extends Model {
     public Long id;
 
     @OneToMany(mappedBy = "topExtracts",cascade = CascadeType.ALL)
-    public LinkedList<TopEditsUser> topUser= new LinkedList<>();
+    public List<TopEditsUser> topUser= new LinkedList<>();
 
     @OneToMany(mappedBy = "topExtracts",cascade = CascadeType.ALL)
-    public LinkedList<TopEditsArticle> topArticles = new LinkedList<>();
+    public List<TopEditsArticle> topArticles = new LinkedList<>();
 
     @OneToMany(mappedBy = "topExtracts",cascade = CascadeType.ALL)
-    public LinkedList<TopEditsNation> topNations= new LinkedList<>();
+    public List<TopEditsNation> topNations= new LinkedList<>();
 
     @Constraints.Required
     @Formats.DateTime(pattern="dd/MM/yyyy")

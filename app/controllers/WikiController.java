@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.TimeZone;
 
+import models.TopEditsExtract;
+
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -109,18 +111,23 @@ public class WikiController extends Controller {
 	}
 
 	public static Result getCurrentTopArticles(){
-		//TODO ebean call
-		return ok("not implemented");
+		TopEditsExtract edit = TopEditsExtract.find.orderBy("timestamp desc").setMaxRows(1).findUnique();
+		return ok(Json.toJson(edit.topArticles));
 	}
 	
 	public static Result getCurrentTopUsers(){
-		//TODO ebean call
-		return ok("not implemented");
+		TopEditsExtract edit = TopEditsExtract.find.orderBy("timestamp desc").setMaxRows(1).findUnique();
+		return ok(Json.toJson(edit.topUser));
 	}
 	
 	public static Result getCurrentTopNations(){
-		//TODO ebean call
-		return ok("not implemented");
+		TopEditsExtract edit = TopEditsExtract.find.orderBy("timestamp desc").setMaxRows(1).findUnique();
+		return ok(Json.toJson(edit.topNations));
+	}
+	
+	public static Result getAllTopEdits(){
+		TopEditsExtract edit = TopEditsExtract.find.orderBy("timestamp desc").setMaxRows(1).findUnique();
+		return ok(Json.toJson(edit));
 	}
 	/**
 	 * Route for analyzing an Article

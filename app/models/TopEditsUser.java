@@ -4,12 +4,16 @@ import java.util.*;
 
 import javax.persistence.*;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import play.db.ebean.*;
 import play.data.format.*;
 import play.data.validation.*;
 
 @Entity
 public class TopEditsUser extends Model {
+
+	private static final long serialVersionUID = -1211718927369470613L;
 
 	@Id
 	public Long id;
@@ -19,7 +23,8 @@ public class TopEditsUser extends Model {
 
 	public int editCounts;
 
-    @ManyToOne(fetch=FetchType.LAZY)
+	@ManyToOne(fetch=FetchType.EAGER)
+	@JsonIgnore
     public TopEditsExtract topExtracts;
 
 

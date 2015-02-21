@@ -728,8 +728,10 @@ public class WikiAnalyzer {
 
         extractResults.save();
         
-
+        
         System.out.println(extractResults.id);
+        
+        
   
         
         	

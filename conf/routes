@@ -10,6 +10,7 @@ GET        /usergeo/:user                       controllers.WikiController.geoFo
 GET		   /edits/top/nations					controllers.WikiController.getCurrentTopNations()
 GET		   /edits/top/users						controllers.WikiController.getCurrentTopUsers()
 GET		   /edits/top/articles					controllers.WikiController.getCurrentTopArticles()
+GET			/edits/top							controllers.WikiController.getAllTopEdits()
 POST       /users/extract						controllers.WikiController.extractWikiUsers()
 POST       /users/nations/extract				controllers.WikiController.extractUserNation()
 GET			/test								controllers.WikiController.startJobToGetMostEditedArticles()
