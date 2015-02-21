@@ -686,7 +686,6 @@ public class WikiAnalyzer {
 			// get country
 		}
 		
-
 		List<Entry<String,Integer>> topUsers= getTopValues(userToCount,10);
 		List<Entry<String,Integer>> topPages = getTopValues(pageToCount,10);
 		List<Entry<String,Integer>> topNations = getTopValues(nationToCount,10);
@@ -718,6 +717,7 @@ public class WikiAnalyzer {
         extractResults.save();
 
         return Json.toJson(test);
+
 
 	}
 	
