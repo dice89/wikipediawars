@@ -190,7 +190,7 @@ public class WikiController extends Controller {
 	
 	
 	public static Promise<Result> startJobToGetMostEditedArticles(){
-		return chainGetRecentChanges(Optional.empty(), new ArrayList<JsonNode>(),null).map(combinedResponses->{
+		return chainGetRecentChanges(Optional.empty(), new ArrayList<JsonNode>()).map(combinedResponses->{
 			
 			CombinedJSONResponse responses = null;
 			if(combinedResponses instanceof CombinedJSONResponse){
@@ -260,6 +260,21 @@ public class WikiController extends Controller {
 		return df.format(c.getTime());
 
 	}
+	
+	private static String getDaysBackUTCTimeStamp(int days_back) {
+		TimeZone tz = TimeZone.getTimeZone("UTC");
+		DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+		df.setTimeZone(tz);
+	
+		
+		long day_in_ms = 1000*60*60;
+		long time_days_back = System.currentTimeMillis() - days_back*day_in_ms;
+
+		return df.format(time_days_back);
+
+	}
+	
+	
 
 	public static Result extractUserNation() {
 
@@ -268,7 +283,7 @@ public class WikiController extends Controller {
 	}
 
 	public static Result extractWikiUsers() {
-
+		
 		// action=query&list=allusers&aufrom=Y&aulimit=max
 		WSRequestHolder holder = WS.url("http://en.wikipedia.org/w/api.php");
 		holder = holder.setQueryParameter("format", "json")
@@ -351,9 +366,11 @@ public class WikiController extends Controller {
 	
 	private static Promise<Object> chainGetRecentChanges(
 			final Optional<String> continue_revision,
-			final List<JsonNode> responses, final String end_date_utc_string) {
+			final List<JsonNode> responses) {
 
 		// create parameters
+		String date_back = getDaysBackUTCTimeStamp(1);
+		
 		//http://en.wikipedia.org/w/api.php?action=query&list=recentchanges&rcprop=title|sizes|flags|user&rclimit=max&rcend=2015-01-25T00:00:00Z
 		WSRequestHolder holder = WS.url("http://en.wikipedia.org/w/api.php");
 		holder = holder.setQueryParameter("format", "json")
@@ -362,7 +379,7 @@ public class WikiController extends Controller {
 				.setQueryParameter("rcprop", "title|sizes|flags|user")
 				.setQueryParameter("rclimit", "max")
 				.setQueryParameter("rcshow", "!bot")
-				.setQueryParameter("rcend", "2015-02-21T09:00:00Z");
+				.setQueryParameter("rcend", date_back);
 
 		
 		if (continue_revision.isPresent()) {
@@ -388,7 +405,7 @@ public class WikiController extends Controller {
 						.ofNullable(json_response.findPath("query-continue")
 								.findPath("rccontinue").toString());
 				Logger.debug("Continue Analysis with" + continue_value.get());
-				return chainGetRecentChanges(continue_value, responses, end_date_utc_string);
+				return chainGetRecentChanges(continue_value, responses);
 				
 			}
 		});
