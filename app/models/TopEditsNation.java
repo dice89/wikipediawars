@@ -1,6 +1,7 @@
 package models;
 
 import java.util.*;
+
 import javax.persistence.*;
 
 import play.db.ebean.*;
@@ -10,23 +11,26 @@ import play.data.validation.*;
 @Entity
 public class TopEditsNation extends Model {
 
-    @Id
-    public Long id;
+	private static final long serialVersionUID = 7893549669380111007L;
 
-    @Constraints.Required
-    public String isoCode;
+	@Id
+	public Long id;
 
-    public int editCounts;
+	@Constraints.Required
+	public String isoCode;
 
-    @ManyToOne
+	public int editCounts;
+
+    @ManyToOne(fetch=FetchType.LAZY)
     public TopEditsExtract topExtracts;
 
-    public static Finder<Long,TopEditsNation> find = new Finder<Long,TopEditsNation>(
-            Long.class, TopEditsNation.class
-    );
 
-    public TopEditsNation(String isoCode, int editCounts) {
-        this.isoCode = isoCode;
-        this.editCounts = editCounts;
-    }
+	public static Finder<Long, TopEditsNation> find = new Finder<Long, TopEditsNation>(
+			Long.class, TopEditsNation.class);
+
+	public TopEditsNation(String isoCode, int editCounts) {
+		super();
+		this.isoCode = isoCode;
+		this.editCounts = editCounts;
+	}
 }

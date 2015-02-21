@@ -1,6 +1,7 @@
 package models;
 
 import java.util.*;
+
 import javax.persistence.*;
 
 import play.db.ebean.*;
@@ -18,7 +19,7 @@ public class TopEditsArticle extends Model {
     @Constraints.Required
     public String label;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     public TopEditsExtract topExtracts;
 
     public static Finder<Long,TopEditsArticle> find = new Finder<Long,TopEditsArticle>(
@@ -29,4 +30,10 @@ public class TopEditsArticle extends Model {
         this.editCounts = editCounts;
         this.label = label;
     }
+
+	public TopEditsArticle() {
+		super();
+	}
+    
+    
 }

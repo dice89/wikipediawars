@@ -13,13 +13,13 @@ public class TopEditsExtract extends Model {
     @Id
     public Long id;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "topExtracts")
+    @OneToMany(mappedBy = "topExtracts",cascade = CascadeType.ALL)
     public LinkedList<TopEditsUser> topUser= new LinkedList<>();
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "topExtracts")
+    @OneToMany(mappedBy = "topExtracts",cascade = CascadeType.ALL)
     public LinkedList<TopEditsArticle> topArticles = new LinkedList<>();
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "topExtracts")
+    @OneToMany(mappedBy = "topExtracts",cascade = CascadeType.ALL)
     public LinkedList<TopEditsNation> topNations= new LinkedList<>();
 
     @Constraints.Required
@@ -31,7 +31,13 @@ public class TopEditsExtract extends Model {
     );
 
     public TopEditsExtract(Date timestamp) {
+    	super();
         this.timestamp = timestamp;
     }
+
+	public TopEditsExtract() {
+		super();
+	}
+    
 
 }
