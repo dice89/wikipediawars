@@ -45,8 +45,8 @@ public class Global extends GlobalSettings {
         ActorRef timeoutsActor = Akka.system().actorOf(Props.create(ExtractChangesActor.class), "ExtractChangesActor");
 
         Akka.system().scheduler().schedule(
-                Duration.create(15, TimeUnit.SECONDS), //Initial delay
-                Duration.create(1, TimeUnit.MINUTES),     //Frequency
+                Duration.create(30, TimeUnit.SECONDS), //Initial delay
+                Duration.create(24, TimeUnit.HOURS),     //Frequency
                 timeoutsActor,
                 "startJobToGetMostEditedArticles",
                 Akka.system().dispatcher(),
