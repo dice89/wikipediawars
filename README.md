@@ -52,13 +52,16 @@ Top changed articles and how active users and regions are in the world in the la
 + Method: GET
 + Response-Type: application/json
 + Example Call: /edits/top
-+ Response: ```` {
++ Response:
+```json 
+{
 "id": 7,
 "topUser": [],
 "topArticles": [],
 "topNations": [],
 "timestamp": 1424523911000
-}````
+}
+```
 
 ##### Top active Users on Wikipedia
 Top active users of the last day
@@ -66,7 +69,9 @@ Top active users of the last day
 + Method: GET
 + Response-Type: application/json
 + Example Call: /edits/top/users
-+ Response: ````[
++ Response: 
+```json 
+[
 {
 "id": 11,
 "name": "DavidMar86hdf",
@@ -74,15 +79,18 @@ Top active users of the last day
 },
 ....
 {}
-]````
+]
+```
 
 ##### Top edited articles on Wikipedia
-Top active users of the last day
+Top edited articles of the last day
 + URL: /edits/top/articles
 + Method: GET
 + Response-Type: application/json
 + Example Call: /edits/top/articles
-+ Response: ````[
++ Response:
+```json
+[
 {
 "id": 31,
 "editCounts": 7,
@@ -90,8 +98,47 @@ Top active users of the last day
 },
 ...
 {}
-]````
+]
+```
 
+##### Top edited articles on Wikipedia
+Top edited articles of the last day
++ URL: /edits/top/articles
++ Method: GET
++ Response-Type: application/json
++ Example Call: /edits/top/articles
++ Response:
+```json
+[
+{
+"id": 31,
+"editCounts": 7,
+"label": "List of modernized retellings of old stories"
+},
+...
+{}
+]
+```
 
-
-
+##### Top active countries on Wikipedia
+The countries that edited the most in the last couple of days
++ URL: /edits/top/nations
++ Method: GET
++ Response-Type: application/json
++ Example Call: /edits/top/nations
++ Response:
+```json
+[
+{
+"id": 11,
+"isoCode": "US",
+"editCounts": 20
+},
+.....
+{
+"id": 20,
+"isoCode": "ES",
+"editCounts": 4
+}
+]
+```
