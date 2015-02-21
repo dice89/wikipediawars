@@ -19,7 +19,9 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import org.apache.http.client.ClientProtocolException;
+import models.TopEditsArticle;
+import models.TopEditsExtract;
+import models.TopEditsUser;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.FieldType;
@@ -70,14 +72,7 @@ import de.w4.analyzer.util.TFIDFWord;
  * @author Alexander C. Mueller, Michael Dell
  *
  */
-/**
- * @author mueller
- *
- */
-/**
- * @author mueller
- *
- */
+
 public class WikiAnalyzer {
 
 	public static final String NO_USER_LOCATION_FOUND = "NK";
@@ -161,7 +156,6 @@ public class WikiAnalyzer {
 	/**
 	 * Method that analysis the text difference between different revisions
 	 * 
-	 * @param revision_arrays
 	 * @return
 	 * @throws IOException
 	 */
@@ -351,8 +345,6 @@ public class WikiAnalyzer {
 	 * @param reader
 	 * @param docFrequencies
 	 * @param revisions
-	 * @param termFrequencies
-	 * @param tf_Idf_Weights
 	 * @throws IOException
 	 */
 	protected List<TFIDFWord> tfidf(IndexReader reader,
@@ -637,7 +629,7 @@ public class WikiAnalyzer {
 		return summaryObjectList;
 	}
 
-	public JsonNode getTopPagesEditorAndCountries(List<JsonNode> revisions) throws ClientProtocolException, URISyntaxException, IOException, GeoIp2Exception {
+	public JsonNode getTopPagesEditorAndCountries(List<JsonNode> revisions) throws Exception {
 
 		Map<String, Integer> userToCount = new HashMap<String, Integer>();
 		Map<String, Integer> pageToCount = new HashMap<String, Integer>();
@@ -698,15 +690,34 @@ public class WikiAnalyzer {
 		List<Entry<String,Integer>> topUsers= getTopValues(userToCount,10);
 		List<Entry<String,Integer>> topPages = getTopValues(pageToCount,10);
 		List<Entry<String,Integer>> topNations = getTopValues(nationToCount,10);
-		
-		//System.out.println(topUsers.get(0).getKey() +topUsers.get(0).getValue() );
-		JsonNode test =  Json.toJson(topPages);
-		//TODO store top pages and top users in meaning full way per day and join both jsons to reply
-		//System.out.println(test.toString());
-		
-		System.out.println(topNations.get(0).getKey() +topNations.get(0).getValue() );
-		
-		return Json.toJson(test);
+
+        System.out.println(topUsers.get(0).getKey() +topUsers.get(0).getValue() );
+        JsonNode test =  Json.toJson(topPages);
+
+        //TODO store top pages and top users in meaning full way per day and join both jsons to reply
+        System.out.println(test.toString());
+
+        TopEditsExtract extractResults = new TopEditsExtract(new Date());
+
+        //add top pages
+        for(Entry<String,Integer> page: topPages) {
+            Logger.debug("Pages:");
+            Logger.debug(page.getKey());
+            Logger.debug(page.getValue().toString());
+            extractResults.topArticles.add(new TopEditsArticle(page.getKey(), page.getValue()));//Integer.parseInt(page.getValue().toString())
+        }
+
+        //add top users
+        for(Entry<String,Integer> user: topUsers) {
+            Logger.debug("Users:");
+            Logger.debug(user.getKey());
+            Logger.debug(user.getValue().toString());
+            extractResults.topUser.add(new TopEditsUser(user.getKey(), user.getValue()));
+        }
+
+        extractResults.save();
+
+        return Json.toJson(test);
 
 	}
 	
@@ -722,7 +733,7 @@ public class WikiAnalyzer {
 				break;
 			}
 			i++;
-		}	
+		}
 		return topValues;
 	}
 

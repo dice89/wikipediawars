@@ -196,9 +196,9 @@ public class WikiController extends Controller {
 			if(combinedResponses instanceof CombinedJSONResponse){
 				responses = (CombinedJSONResponse) combinedResponses;
 			}
-			WikiAnalyzer.getWikiAnalyzer().getTopPagesEditorAndCountries(responses.getResponses());
+			JsonNode result = WikiAnalyzer.getWikiAnalyzer().getTopPagesEditorAndCountries(responses.getResponses());
 	
-			return ok("test");
+			return ok(result);
 		});
 	}
 	
@@ -474,33 +474,33 @@ public class WikiController extends Controller {
 				.url(url)
 				.get()
 				.map(response -> {
-					Document doc = Jsoup.parse(response.getBody());
-					Elements contentLinks = doc.getElementById("bodyContent")
-							.getElementsByTag("a");
-					String s = "";
-					List<String> candidates = new ArrayList<>();
+                    Document doc = Jsoup.parse(response.getBody());
+                    Elements contentLinks = doc.getElementById("bodyContent")
+                            .getElementsByTag("a");
+                    String s = "";
+                    List<String> candidates = new ArrayList<>();
 
-					for (Element e : contentLinks) {
+                    for (Element e : contentLinks) {
 
-						String[] parts = e.attr("href").split("/");
-						if (parts[parts.length - 1].contains(":"))
-							continue;
-						if (parts[parts.length - 1].contains("#"))
-							continue;
+                        String[] parts = e.attr("href").split("/");
+                        if (parts[parts.length - 1].contains(":"))
+                            continue;
+                        if (parts[parts.length - 1].contains("#"))
+                            continue;
 
-						s += parts[parts.length - 1];
-						// Logger.debug(s);
-						candidates.add(parts[parts.length - 1].trim());
-					}
+                        s += parts[parts.length - 1];
+                        // Logger.debug(s);
+                        candidates.add(parts[parts.length - 1].trim());
+                    }
 
-					Optional<String> nation = candidates
-							.stream()
-							.filter(can -> nations().stream().anyMatch(
-									na -> na.equalsIgnoreCase(can)))
-							.findFirst();
+                    Optional<String> nation = candidates
+                            .stream()
+                            .filter(can -> nations().stream().anyMatch(
+                                    na -> na.equalsIgnoreCase(can)))
+                            .findFirst();
 
-					return nation;
-				}).get(TIMEOUT);
+                    return nation;
+                }).get(TIMEOUT);
 	}
 
 }

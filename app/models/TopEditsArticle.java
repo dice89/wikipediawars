@@ -25,4 +25,8 @@ public class TopEditsArticle extends Model {
             Long.class, TopEditsArticle.class
     );
 
+    public TopEditsArticle(String label, int editCounts) {
+        this.editCounts = editCounts;
+        this.label = label;
+    }
 }

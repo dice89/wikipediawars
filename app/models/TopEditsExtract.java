@@ -13,14 +13,14 @@ public class TopEditsExtract extends Model {
     @Id
     public Long id;
 
-    @ManyToMany
-    public LinkedList<TopEditsUser> topUser;
+    @ManyToMany(cascade = CascadeType.ALL)
+    public LinkedList<TopEditsUser> topUser= new LinkedList<>();
 
-    @ManyToMany
-    public LinkedList<TopEditsArticle> topArticles;
+    @ManyToMany(cascade = CascadeType.ALL)
+    public LinkedList<TopEditsArticle> topArticles = new LinkedList<>();
 
-    @ManyToMany
-    public LinkedList<TopEditsNation> topNations;
+    @ManyToMany(cascade = CascadeType.ALL)
+    public LinkedList<TopEditsNation> topNations= new LinkedList<>();
 
     @Constraints.Required
     @Formats.DateTime(pattern="dd/MM/yyyy")
@@ -29,5 +29,9 @@ public class TopEditsExtract extends Model {
     public static Finder<Long,TopEditsExtract> find = new Finder<Long,TopEditsExtract>(
             Long.class, TopEditsExtract.class
     );
+
+    public TopEditsExtract(Date timestamp) {
+        this.timestamp = timestamp;
+    }
 
 }
