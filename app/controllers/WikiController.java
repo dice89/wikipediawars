@@ -81,29 +81,7 @@ public class WikiController extends Controller {
 		}
 	}
 	
-	
-	public static Result testFile(){
-		
-		try {
-		
-			InputStream stream = Play.application().classloader().getResourceAsStream("public/data/un_nations.txt");
-			BufferedReader br = new BufferedReader(new InputStreamReader( stream));
-			List<String> nations = new ArrayList<String>();
-			
-			String theLine = null;
-			while((theLine = br.readLine())!= null){
-				nations.add(theLine);
-			}
-			
-		} catch (Exception e){
 
-			System.out.println(e);
-		}
-			//Files.readAllLines(new File(Play.application().classloader().getResource("data/un_nations.txt").toString()).toPath(), Charset.forName("UTF-8"));
-			return ok("found");
-		
-		
-	}
 
 	/**
 	 * Wrapper service for Wikipedia Autosuggest
@@ -384,7 +362,7 @@ public class WikiController extends Controller {
 				.setQueryParameter("rcprop", "title|sizes|flags|user")
 				.setQueryParameter("rclimit", "max")
 				.setQueryParameter("rcshow", "!bot")
-				.setQueryParameter("rcend", "2015-01-27T21:00:00Z");
+				.setQueryParameter("rcend", "2015-02-21T09:00:00Z");
 
 		
 		if (continue_revision.isPresent()) {
