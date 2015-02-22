@@ -47,9 +47,22 @@ body {
         height: 10px;
     }
 }
+
+/* NAVBAR */
 .navbar-center {
-  margin: 0 calc(50% - 200px);
+  /*margin: 0 calc(50% - 200px);*/
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  -webkit-transform: translateX(-50%);
 }
+nav.navbar {
+  border-top: 5px solid #d16475;
+  padding-top: 5px;
+  background-color: #2e3143;
+  box-shadow: 0 0 10px #000000;
+}
+
 #infobar {
     background-color: rgba(0, 0, 0, 0.5);
     position: fixed;
@@ -68,6 +81,7 @@ body {
     top: 50%;
     left: 50%;
     transform: translateX(-50%) translateY(-50%);
+    -webkit-transform: translateX(-50%) translateY(-50%);
     padding: 0px;
     position: absolute;
     z-index: 0;
