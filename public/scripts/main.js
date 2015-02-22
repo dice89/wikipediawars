@@ -87,8 +87,26 @@
                     },
                     get: function(){return STATE.requestSettings.aggregation._store;},
                     _store: "d"
+                },
+                referenceDate: {
+                    set: function(v){
+                       STATE.requestSettings.referenceDate._store = v; 
+                    },
+                    get: function(){return STATE.requestSettings.referenceDate._store;},
+                    _store: null
                 }
                 }
+            },
+        CHART_T5_OPTIONS = {
+            animation: { duration: 0, easing: 'inAndOut', startup: true },
+            legend: { position: 'none', textStyle:{color: '#ffffff'} },
+            backgroundColor: 'transparent',
+            colors:['#2e3143','#393d4f','#474c63','#5d6482','#646c8c'],
+            dataOpacity: 1,
+            vAxis:{textStyle:{color:'#ffffff'},baselineColor:'#ffffff'},
+            hAxis:{textStyle:{color:'#ffffff'}}
+            // vAxis:{maxValue: 100, minValue: 100}
+            // vAxis: {logScale: true}
             };
 
     // Bootstrap
@@ -116,7 +134,7 @@
             // init top 5 column chart and draw initial data
             chartTop5 = new google.visualization.ColumnChart(document.getElementById('chart-top5'));
             var data = new google.visualization.arrayToDataTable([['Country', 'Edits'],['',0]]);
-            chartTop5.draw(data);
+            chartTop5.draw(data, CHART_T5_OPTIONS);
 
             // init tag cloud and draw initial words
             var dataTags = new google.visualization.DataTable();
@@ -285,7 +303,16 @@
             };
             chartTagCloud.draw(data, null);
 
-            onSetUIStateForRevision(0);
+            // Update vAxis 
+            // var peak = 0;
+            // RESPONSE.revisions.map(function(v,i,a){
+            //     v.summary.map(function(v,i,a){
+            //         peak = v.editSize > peak ? v.editSize : peak;
+            //     });
+            // });
+            // CHART_T5_OPTIONS.vAxis = {maxValue: peak, minValue: peak};
+
+            updateUIStateForRevision(0);
         }
         r.send();
     }
@@ -293,45 +320,52 @@
     // On Timeslidervalue changed
     function onSlideValueChange(e, ui ) {
         // console.log(ui.value);
-        onSetUIStateForRevision(ui.value);
+        updateUIStateForRevision(ui.value);
     }
 
     // Set UI State for a specific Revision
-    function onSetUIStateForRevision(revisionIndex) {
+    function updateUIStateForRevision(revisionIndex) {
         // Prevent for null pointer
-        // if (RESPONSE){if(RESPONSE.revisions.length >= revisionIndex) {return}}
+        if (!RESPONSE || RESPONSE.revisions.length < revisionIndex){return;}
 
         // UPDATE GEOCHART WITH DATA FROM FIRST TIMESTAMP
         var countries = new Array();
         var countriesTop5 = new Array();
         var totalEdits = 0;
         var authors = 0;
-        if (RESPONSE.revisions) {
-            countries.push(['Country', 'Edits']);
-            for (var j = 0; j < RESPONSE.revisions[revisionIndex].summary.length; j++) {
-                if (RESPONSE.revisions[revisionIndex].summary[j].country != "") {
-                    // Push to Geo Data Array
-                    countries.push([
-                        RESPONSE.revisions[revisionIndex].summary[j].country,
-                        RESPONSE.revisions[revisionIndex].summary[j].editSize
-                        ]);
-                    // Update max number od edits
-                    if (RESPONSE.revisions[revisionIndex].summary[j].editSize > 0) {
-                        totalEdits += RESPONSE.revisions[revisionIndex].summary[j].editSize;
-                        authors++;
-                    };
-                }
+        var countryBucket;
+
+        countries.push(['Country', 'Edits']);
+        for (var j = 0; j < RESPONSE.revisions[revisionIndex].summary.length; j++) {
+            countryBucket = RESPONSE.revisions[revisionIndex].summary[j];
+            if (countryBucket.country == "" || 
+                countryBucket.country == "NK") {
+                countryBucket.country = _["unknown"][l];
             }
-            // console.log(countries);
-            var geodata = google.visualization.arrayToDataTable(countries);
-            geochart.draw(geodata);
+            // Push to Geo Data Array
+            countries.push([
+                countryBucket.country,
+                countryBucket.editSize
+                ]);
+            // Update max number od edits
+            if (countryBucket.editSize > 0) {
+                totalEdits += countryBucket.editSize;
+                authors++;
+            };
         }
+        // console.log(countries);
+        var geodata = google.visualization.arrayToDataTable(countries);
+        geochart.draw(geodata);
 
         // UPDATE TOP 5 CONTRIBUTORS
         // Sort Array and update Index
         countries.sort(function(a, b){return b[1]-a[1]});
-        var data = new google.visualization.arrayToDataTable(countries.slice(0,5));
-        chartTop5.draw(data);
+        var colors = [{role:'style'},'#2e3143','#393d4f','#474c63','#5d6482','#646c8c'];
+        for (var i = 0; i < countries.slice(0,6).length; i++) {
+            countries[i].push(colors[i]);
+        };
+        var data = new google.visualization.arrayToDataTable(countries.slice(0,6));
+        chartTop5.draw(data, CHART_T5_OPTIONS);
 
         // UPDATE DATE
         var d = new Date(RESPONSE.revisions[revisionIndex].timeStamp);

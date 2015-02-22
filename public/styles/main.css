@@ -47,6 +47,9 @@ body {
         height: 10px;
     }
 }
+.navbar-center {
+  margin: 0 calc(50% - 200px);
+}
 #infobar {
     background-color: rgba(0, 0, 0, 0.5);
     position: fixed;

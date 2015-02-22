@@ -60,23 +60,51 @@
     <!-- TOOLBAR -->
     <nav class="navbar navbar-inverse navbar-fixed-top">
         <div id="nav-container" class="container-fluid">
-            <form class="navbar-form navbar-left" role="search">
-                <button id="btn-toggle-settings" type="button" class="btn btn-default">Toggle Side Panel</button>
-            </form>
-            <p id="output-article" class="navbar-text">Current Article</p>
+            <p class="navbar-text pull-left"><button id="btn-toggle-settings">Toggle</button>&nbsp;<span id="output-article">Current Article</span></p>
             <div class="navbar-header">
-                <a class="navbar-brand" href="#">
-                    <span>#WikiWars ALPHA (V 0.1) - STATUS: EXPERIMENTAL</span>
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand navbar-center" href="#">
+                    <span>WikiWars</span>
                 </a>
             </div>
-            <ul class="nav navbar-nav pull-right ">
+            <div id="navbar" class="collapse navbar-collapse">
+              <ul class="nav navbar-nav pull-right">
                 <li><a href="#">Mail</a>
                 </li>
                 <li><a href="#">Facebook</a>
                 </li>
                 <li><a href="#">Twitter</a>
                 </li>
-            </ul>
+              </ul>
+            </div>
+            <!--form class="navbar-form navbar-left" role="search">
+                <button id="btn-toggle-settings" type="button" class="btn btn-default">Toggle Side Panel</button>
+            </form>
+            <p id="output-article" class="navbar-text">Current Article</p>
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="#">
+                    <span>#WikiWars ALPHA (V 0.1) - STATUS: EXPERIMENTAL</span>
+                </a>
+            </div>
+            <ul id="navbar" class="nav navbar-nav pull-right ">
+                <li><a href="#">Mail</a>
+                </li>
+                <li><a href="#">Facebook</a>
+                </li>
+                <li><a href="#">Twitter</a>
+                </li>
+            </ul-->
         </div>
     </nav>
 
