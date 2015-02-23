@@ -1,5 +1,4 @@
 /* General Styles */
-
 html * {
     font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
     font-weight: 400;
@@ -9,8 +8,12 @@ body {
     font: "Open Sans" 300;
     /* background-color: #f5f5f5; */
 }
-/* HELPER CLASSES */
+i {
+  color: #cccccc;
+  font-size: 16pt;
+}
 
+/* HELPER CLASSES */
 .align-vertical {
     top: 50%;
     transfrom: translateY(-50%);
@@ -62,13 +65,54 @@ nav.navbar {
   background-color: #2e3143;
   box-shadow: 0 0 10px #000000;
 }
+a[role="button"] {
+    text-decoration: none;
+}
+#output-article {
+  padding-left: 15px;
+  color: #cccccc;
+  font-size: 14pt;
+}
+.navbar-brand span {
+  color: #cccccc;
+  font-size: 20pt;
+}
+.navbar-brand span.brand-p1 {
+  font-weight: 200;
+}
+.navbar-brand span.brand-p2 {
+  font-weight: 800;
+}
+.navbar-nav i {
+  font-size: 20pt;
+}
+.navbar-toggle {
+  background-color: transparent !important;
+}
+.navbar-toggle span.icon-bar {
+  background-color: #cccccc;
+}
+@media (max-width: 767px) {
+  .navbar-collapse ul {
+    float: none !important;
+    text-align: center;
+  }
+  .navbar-collapse ul li span {
+    display: inline;
+  }
+}
 
+/* INFOBAR */
 #infobar {
-    background-color: rgba(0, 0, 0, 0.5);
-    position: fixed;
+    background-color: rgba(63, 70, 96, 0.8);
+    top: 68px;
+    position: absolute;
     z-index: 1;
     width: 100%;
+    color: #cccccc;
+    font-size: 14pt;
 }
+
 #panel-setting {
   z-index: 3;
   background-color: rgba(0, 0, 0, 0.5);

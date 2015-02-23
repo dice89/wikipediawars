@@ -1,6 +1,6 @@
 (function() {
     "use strict";
-    alert("Attention: WikiWars is still in development. A final release is planned this year. You're interested in sponsoring or cooperation: mail@jascha-quintern.de");
+    // alert("Attention: WikiWars is still in development. A final release is planned this year. You're interested in sponsoring or cooperation: mail@jascha-quintern.de");
 
     // Declaration & Initializing
     var geochart,
