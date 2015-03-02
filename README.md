@@ -8,6 +8,7 @@ Tool to see how neutral wikipedia articles are!
 
 - Redis 
 - Play Framework
+- MySql
 
 Installation Redis with Homebrew on Mac
 ```bash
@@ -30,7 +31,7 @@ The following Endpoints are available as a JSON API:
   - article: The name of the article as in wikipedia
   - timescope: Valid input formats: 1m,3m,6m : The timeframe within the articles will be analyzed starting from today
   - aggregation: Valid input values: d,w,m: Defines the aggregation mode of the analysis. The results are either aggregated by day, by week or by month
-+ Example Call: http://www.wiki-wars.org/revisions/analyse/Germany?timescope=1m&aggregation=w
++ Example Call: http://www.wiki-wars.org/revisions/analyse/Berlin?timescope=6m&aggregation=w
 + Example Response: Coming Soon!
 
 
